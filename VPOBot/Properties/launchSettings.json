@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "VPOBot": {
+      "commandName": "Project"
+    },
+    "Docker": {
+      "commandName": "Docker"
+    }
+  }
+}
