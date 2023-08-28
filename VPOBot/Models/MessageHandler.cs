@@ -17,5 +17,7 @@ namespace WORLDGAMEDEVELOPMENT
         public abstract Task HandlePollingErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken);
 
         public abstract Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken);
+
+        public abstract bool CanHandle(long? userId, CancellationToken cancellationToken);
     }
 }

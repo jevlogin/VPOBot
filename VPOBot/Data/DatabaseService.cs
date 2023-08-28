@@ -78,7 +78,24 @@ namespace WORLDGAMEDEVELOPMENT
         #endregion
 
 
+        #region AddAdminAsync
 
+        internal async Task AddAdminAsync(UserAdmin admin)
+        {
+            var adminInServer = await _dbContext.UsersAdmin.FindAsync(admin.UserId);
+            if (adminInServer == null)
+            {
+                await _dbContext.UsersAdmin.AddAsync(admin);
+            }
+            else
+            {
+                _dbContext.Entry(adminInServer).CurrentValues.SetValues(admin);
+            }
+
+            await _dbContext.SaveChangesAsync();
+        }
+
+        #endregion
 
     }
 }
