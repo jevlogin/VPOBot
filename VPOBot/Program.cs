@@ -25,7 +25,7 @@ namespace WORLDGAMEDEVELOPMENT
             var userList = await databaseService.LoadUserListAsync();
 
             var adminMessageHandler = new AdminMessageHandler(botClient, databaseService, adminList, userList);
-
+            var userMessageHandler = new UserMessageHandler(botClient, databaseService, adminList, userList);
 
             Console.ReadLine();
         }

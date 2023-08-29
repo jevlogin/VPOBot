@@ -3,6 +3,7 @@ using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
+
 namespace WORLDGAMEDEVELOPMENT
 {
     internal class AdminMessageHandler : MessageHandler
@@ -18,14 +19,13 @@ namespace WORLDGAMEDEVELOPMENT
 
         #region ClassLifeCycles
 
-        public AdminMessageHandler(TelegramBotClient botClient, DatabaseService databaseService,
+        public AdminMessageHandler(ITelegramBotClient botClient, DatabaseService databaseService,
                                     Dictionary<long, string> adminList, Dictionary<long, UserVPO> userList) : base(botClient)
         {
             _databaseService = databaseService;
             _adminList = adminList;
             _userList = userList;
         }
-
 
 
         #endregion
@@ -405,7 +405,6 @@ namespace WORLDGAMEDEVELOPMENT
             }
             return false;
         }
-
 
         private bool IsAdmin(long id)
         {
