@@ -175,9 +175,140 @@ namespace WORLDGAMEDEVELOPMENT
 
         #region Methods
 
-        private Task HandleTextAsync(Message message, CancellationToken cancellationToken)
+        private async Task HandleTextAsync(Message message, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (message.ReplyToMessage is not { } replyToMessage)
+                return;
+
+            if (replyToMessage.ForwardFrom is { } forwardFrom && forwardFrom.Id != _botClient.BotId)
+            {
+                var userId = forwardFrom.Id;
+                var adminName = message.From.FirstName;
+
+                switch (message.Type)
+                {
+                    case MessageType.Unknown:
+                        break;
+                    case MessageType.Text:
+                        if (message.Text is { } text)
+                        {
+                            var msgText = $"<b>{adminName}</b>: <i>{text}</i>";
+
+                            try
+                            {
+                                await _botClient.SendTextMessageAsync(userId, msgText,
+                                                                        parseMode: ParseMode.Html, replyToMessageId: replyToMessage.MessageId,
+                                                                        cancellationToken: cancellationToken);
+                            }
+                            catch (ApiRequestException ex)
+                            {
+                                await Console.Out.WriteLineAsync($"По не известной причине, блок метода - 'HandleTextAsync', не отработал.\n{ex.Message}");
+
+                                await _botClient.SendTextMessageAsync(userId, msgText, parseMode: ParseMode.Html,
+                                                                        cancellationToken: cancellationToken);
+                                throw;
+                            }
+                        }
+                        break;
+                    case MessageType.Photo:
+                        break;
+                    case MessageType.Audio:
+                        break;
+                    case MessageType.Video:
+                        break;
+                    case MessageType.Voice:
+                        break;
+                    case MessageType.Document:
+                        break;
+                    case MessageType.Sticker:
+                        break;
+                    case MessageType.Location:
+                        break;
+                    case MessageType.Contact:
+                        break;
+                    case MessageType.Venue:
+                        break;
+                    case MessageType.Game:
+                        break;
+                    case MessageType.VideoNote:
+                        break;
+                    case MessageType.Invoice:
+                        break;
+                    case MessageType.SuccessfulPayment:
+                        break;
+                    case MessageType.WebsiteConnected:
+                        break;
+                    case MessageType.ChatMembersAdded:
+                        break;
+                    case MessageType.ChatMemberLeft:
+                        break;
+                    case MessageType.ChatTitleChanged:
+                        break;
+                    case MessageType.ChatPhotoChanged:
+                        break;
+                    case MessageType.MessagePinned:
+                        break;
+                    case MessageType.ChatPhotoDeleted:
+                        break;
+                    case MessageType.GroupCreated:
+                        break;
+                    case MessageType.SupergroupCreated:
+                        break;
+                    case MessageType.ChannelCreated:
+                        break;
+                    case MessageType.MigratedToSupergroup:
+                        break;
+                    case MessageType.MigratedFromGroup:
+                        break;
+                    case MessageType.Poll:
+                        break;
+                    case MessageType.Dice:
+                        break;
+                    case MessageType.MessageAutoDeleteTimerChanged:
+                        break;
+                    case MessageType.ProximityAlertTriggered:
+                        break;
+                    case MessageType.WebAppData:
+                        break;
+                    case MessageType.VideoChatScheduled:
+                        break;
+                    case MessageType.VideoChatStarted:
+                        break;
+                    case MessageType.VideoChatEnded:
+                        break;
+                    case MessageType.VideoChatParticipantsInvited:
+                        break;
+                    case MessageType.Animation:
+                        break;
+                    case MessageType.ForumTopicCreated:
+                        break;
+                    case MessageType.ForumTopicClosed:
+                        break;
+                    case MessageType.ForumTopicReopened:
+                        break;
+                    case MessageType.ForumTopicEdited:
+                        break;
+                    case MessageType.GeneralForumTopicHidden:
+                        break;
+                    case MessageType.GeneralForumTopicUnhidden:
+                        break;
+                    case MessageType.WriteAccessAllowed:
+                        break;
+                    case MessageType.UserShared:
+                        break;
+                    case MessageType.ChatShared:
+                        break;
+                    default:
+                        break;
+                }
+
+                await _botClient.SendTextMessageAsync(message.Chat.Id, $"Пользователю {_userList[userId].FirstName}, был отправлен ответ.");
+            }
+            else
+            {
+                await _botClient.SendTextMessageAsync(message.Chat.Id,
+                    $"Для отправки ответного сообщения, пожалуйста, ответьте на сообщение пользователя, на которое вы хотите ответить.", cancellationToken: cancellationToken);
+            }
         }
 
         private async Task HandleCommandAsync(Message message, CancellationToken cancellationToken)
