@@ -97,5 +97,55 @@ namespace WORLDGAMEDEVELOPMENT
 
         #endregion
 
+
+        #region LoadProgressUsers
+
+        internal async Task<Dictionary<long, ProgressUsers>> LoadProgressUsersAsync()
+        {
+            await Console.Out.WriteLineAsync($"Загрузка прогресса пользователей.");
+            var progressList = await _dbContext.ProgressUsers.ToDictionaryAsync(progress => progress.UserId, progress => progress);
+            return progressList;
+        }
+
+        internal async Task<bool> UpdateUserProgressAsync(ProgressUsers progress)
+        {
+            var existProgress = await _dbContext.ProgressUsers.FindAsync(progress.UserId);
+
+            if (existProgress == null)
+            {
+                await _dbContext.ProgressUsers.AddAsync(progress);
+                await Console.Out.WriteLineAsync($"Был добавлен прогресс пользователя - {DialogData.SUCCESS}");
+            }
+            else
+            {
+                _dbContext.Entry(existProgress).CurrentValues.SetValues(progress);
+            }
+
+            await _dbContext.SaveChangesAsync();
+            return true;
+        }
+
+        #endregion
+
+
+        #region AddUserAsync
+
+        internal async Task AddUserAsync(UserVPO user)
+        {
+            var existingUsers = await _dbContext.Users.FindAsync(user.UserId);
+            if (existingUsers == null)
+            {
+                await _dbContext.Users.AddAsync(user);
+                await Console.Out.WriteLineAsync($"Был добавлен новый пользователь в базу даннных");
+            }
+            else
+            {
+                _dbContext.Entry(existingUsers).CurrentValues.SetValues(user);
+            }
+
+            await _dbContext.SaveChangesAsync();
+        }
+
+        #endregion
     }
 }

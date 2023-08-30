@@ -1,11 +1,10 @@
 ﻿using Telegram.Bot;
-using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
 
 
 namespace WORLDGAMEDEVELOPMENT
 {
-    internal abstract class MessageHandler : IUpdateHandler
+    internal abstract class MessageHandler : IMessageHandler
     {
         protected readonly ITelegramBotClient _botClient;
 
@@ -14,10 +13,10 @@ namespace WORLDGAMEDEVELOPMENT
             _botClient = botClient;
         }
 
-        public abstract Task HandlePollingErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken);
+        public abstract Task HandlePollingErrorAsync(Exception exception, CancellationToken cancellationToken);
 
-        public abstract Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken);
+        public abstract Task HandleUpdateAsync(Update update, CancellationToken cancellationToken);
 
-        public abstract bool CanHandle(long? userId, CancellationToken cancellationToken);
+        public abstract bool CanHandle(long userId, CancellationToken cancellationToken);
     }
 }

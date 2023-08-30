@@ -33,7 +33,7 @@ namespace WORLDGAMEDEVELOPMENT
 
         #region MessageHandler
 
-        public override async Task HandlePollingErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
+        public override async Task HandlePollingErrorAsync(Exception exception, CancellationToken cancellationToken)
         {
             await Console.Out.WriteLineAsync($"An error occurred during handling admin message: {exception}");
 
@@ -47,7 +47,7 @@ namespace WORLDGAMEDEVELOPMENT
             }
         }
 
-        public override async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
+        public override async Task HandleUpdateAsync(Update update, CancellationToken cancellationToken)
         {
             switch (update.Type)
             {
@@ -397,7 +397,7 @@ namespace WORLDGAMEDEVELOPMENT
             }
         }
 
-        public override bool CanHandle(long? userId, CancellationToken cancellationToken)
+        public override bool CanHandle(long userId, CancellationToken cancellationToken)
         {
             if (userId is { } id)
             {
@@ -412,6 +412,5 @@ namespace WORLDGAMEDEVELOPMENT
         }
 
         #endregion
-
     }
 }

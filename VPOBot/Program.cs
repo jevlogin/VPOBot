@@ -27,6 +27,22 @@ namespace WORLDGAMEDEVELOPMENT
             var adminMessageHandler = new AdminMessageHandler(botClient, databaseService, adminList, userList);
             var userMessageHandler = new UserMessageHandler(botClient, databaseService, adminList, userList);
 
+            var updateDispatcher = new UpdateDispatcher();
+            updateDispatcher.AddHandler(adminMessageHandler);
+            updateDispatcher.AddHandler(userMessageHandler);
+
+            using CancellationTokenSource cancellationToken = new CancellationTokenSource();
+
+            ReceiverOptions receiverOptions = new ReceiverOptions();
+
+            botClient.StartReceiving(
+                updateDispatcher,
+                receiverOptions: receiverOptions,
+                cancellationToken: cancellationToken.Token);
+
+            var me = await botClient.GetMeAsync();
+
+            Console.WriteLine($"Начало работы бота {me.Username}");
             Console.ReadLine();
         }
     } 
