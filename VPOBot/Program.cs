@@ -1,7 +1,7 @@
 ﻿using Telegram.Bot;
 using Telegram.Bot.Polling;
 using Microsoft.Extensions.Configuration;
-using System.Data.Common;
+
 
 namespace WORLDGAMEDEVELOPMENT
 {

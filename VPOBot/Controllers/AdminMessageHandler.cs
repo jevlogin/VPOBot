@@ -206,7 +206,6 @@ namespace WORLDGAMEDEVELOPMENT
 
                                 await _botClient.SendTextMessageAsync(userId, msgText, parseMode: ParseMode.Html,
                                                                         cancellationToken: cancellationToken);
-                                throw;
                             }
                         }
                         break;
