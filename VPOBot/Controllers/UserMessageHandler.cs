@@ -304,8 +304,123 @@ namespace WORLDGAMEDEVELOPMENT
                     await CreateMenuInlineKeyboardContinue(progress.UserId);
                     break;
                 case 1:
+                    await _botClient.SendTextMessageAsync(progress.UserId,
+                                DialogData.USER_VPO_OFFLINE_DAY_1_STEP_1, replyMarkup: new ReplyKeyboardRemove());
+                    await Pause(2000);
+                    //TODO - Тут добавить кейсы, результаты...
+                    await SendingTheResultsOfTheProgramParticipants(progress.UserId);
+                    await Pause();
+                    await CreateMenuInlineKeyboardContinue(progress.UserId);
+                    break;
+                case 2:
+                    await _botClient.SendTextMessageAsync(progress.UserId, DialogData.GEETING_TO_KNOW_HERBY, parseMode: ParseMode.Html, replyMarkup: new ReplyKeyboardRemove());
+                    var fotoResultsUrl = "https://raw.githubusercontent.com/jevlogin/VPO/main/images/Herby.jpg";
+                    await SendPhotoAsync(progress.UserId, fotoResultsUrl);
+                    //TODO - (Показываем визуализированный образ Герби, он машет рукой)
+                    await Pause(3000);
+                    await _botClient.SendTextMessageAsync(progress.UserId, DialogData.GEETING_TO_KNOW_HERBY_TOGETHER, parseMode: ParseMode.Html);
+                    await Pause(2000);
+                    await CreateMenuInlineKeyboardContinue(progress.UserId);
+                    break;
+                case 3:
+                    await _botClient.SendTextMessageAsync(progress.UserId, DialogData.PREPARING_FOR_THE_TRIP, parseMode: ParseMode.Html, replyMarkup: new ReplyKeyboardRemove());
+                    await Pause(2000);
+                    await _botClient.SendTextMessageAsync(progress.UserId, DialogData.PREPARING_FOR_THE_TRIP_LOST_STEP, parseMode: ParseMode.Html);
+                    await Pause(3000);
+                    await CreateMenuInlineKeyboardContinue(progress.UserId);
+                    break;
+                case 4:
+                    var msgJourneBegins = GetStringFormatDialogUser(DialogData.THE_JOURNEY_BEGINS_USERFIELDS_0, progress.UserId);
+
+                    await _botClient.SendTextMessageAsync(progress.UserId, msgJourneBegins, parseMode: ParseMode.Html, replyMarkup: new ReplyKeyboardRemove());
+                    await Pause(2000, 5000);
+                    await _botClient.SendTextMessageAsync(progress.UserId, DialogData.THE_JOURNEY_BEGINS_PHIRST_STEP, parseMode: ParseMode.Html);
+                    await Pause(3000);
+                    await _botClient.SendTextMessageAsync(progress.UserId, DialogData.THE_JOURNEY_BEGINS_CONCLISION, parseMode: ParseMode.Html);
+                    await Pause(2000);
+                    await CreateMenuInlineKeyboardContinue(progress.UserId);
 
                     break;
+                case 5:
+                    var msgCongratulations = DialogData.USER_CONGRATILATORY_RESPONSES_ANSWER[_random.Next(0, DialogData.USER_CONGRATILATORY_RESPONSES_ANSWER.Length)];
+
+                    await _botClient.SendTextMessageAsync(progress.UserId, msgCongratulations, parseMode: ParseMode.Html, replyMarkup: new ReplyKeyboardRemove());
+                    await Pause(500, 2000);
+
+                    await _botClient.SendTextMessageAsync(progress.UserId, DialogData.INTRODUCTORY_INFORMATION_ABOUT_THE_TRIP, parseMode: ParseMode.Html);
+                    await Pause(700, 3000);
+
+                    await ActivateMethodSendBookStart(progress.UserId, CancellationToken.None);
+                    await Pause(1000, 2000);
+
+                    await _botClient.SendTextMessageAsync(progress.UserId, DialogData.INTRODUCTORY_INFORMATION_ABOUT_THE_TRIP_2, parseMode: ParseMode.Html);
+                    await Pause(1200, 3000);
+
+                    await ActivateMethodUserSendInstructionVPO(progress.UserId, CancellationToken.None);
+                    await Pause(500, 1000);
+
+                    await ActivateMethodUserOfHowToFillOutAFoodDiary(progress.UserId, CancellationToken.None);
+                    await Pause(1000, 2000);
+
+                    if (progress.IsTheNextStepSheduledInTime)
+                    {
+                        try
+                        {
+                            if (_progressUsersList.TryGetValue(progress.UserId, out var userProgres))
+                            {
+                                SetNextTimeStepAddMinutes(userProgres, 3);
+                                await Pause(1000, 2000);
+                                SetNextDayInProgress(userProgres);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            await Console.Out.WriteLineAsync($"Произошла ошибка изменения времени следующего шага и дня.\nПодробнее - {ex.Message}");
+                            throw;
+                        }
+                    }
+
+                    await _botClient.SendTextMessageAsync(progress.UserId, DialogData.BOT_ANSWER_GOODBUY, parseMode: ParseMode.Html);
+                    break;
+                case 6:
+                    //TODO - здесь будем выводить информацию за последний шаг, чтобы пользователь смог вспомнить, на чем он остановился..
+                    await _botClient.SendTextMessageAsync(progress.UserId, DialogData.REMINDER_OF_DAY_1, parseMode: ParseMode.Html);
+
+                    break;
+                default:
+                    await Console.Out.WriteLineAsync($"Пользователь с id - {progress.UserId} вытворяет фокусы");
+                    break;
+            }
+        }
+
+        private void SetNextTimeStepAddMinutes(ProgressUsers userProgres, int minutes)
+        {
+            userProgres.DateTimeOfTheNextStep = DateTime.UtcNow.ToLocalTime().AddMinutes(minutes);
+        }
+
+        private void SetNextDayInProgress(ProgressUsers userProgres)
+        {
+            userProgres.DateNextDayVPO = DateTime.Today.AddDays(1) + new TimeSpan(10, 0, 0);
+        }
+
+        private string GetStringFormatDialogUser(string data, long userId)
+        {
+            return string.Format(data, _userList[userId].FirstName);
+        }
+
+        private async Task SendingTheResultsOfTheProgramParticipants(long userId)
+        {
+            await _botClient.SendTextMessageAsync(userId, DialogData.RESULTS_OF_OUR_PARTICIPANTS, replyMarkup: new ReplyKeyboardRemove());
+            await Pause(1500);
+
+            var msgInstructionHowto = await LoadedInstruction(userId);
+
+            var fotoResultsUrl = "https://raw.githubusercontent.com/jevlogin/VPO/main/results/result_komolova.png";
+            var resultsPhotoSend = await _botClient.SendPhotoAsync(userId, InputFile.FromUri(fotoResultsUrl));
+
+            if (resultsPhotoSend != null)
+            {
+                await _botClient.DeleteMessageAsync(userId, msgInstructionHowto.MessageId);
             }
         }
 
