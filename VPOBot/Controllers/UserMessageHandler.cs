@@ -83,10 +83,10 @@ namespace WORLDGAMEDEVELOPMENT
                 case UpdateType.Unknown:
                     break;
                 case UpdateType.Message:
+
                     if (update.Message is not { } message)
-                    {
                         return;
-                    }
+
                     switch (message.Type)
                     {
                         case MessageType.Unknown:
@@ -267,7 +267,7 @@ namespace WORLDGAMEDEVELOPMENT
         {
             if (_userList[progress.UserId] is { } user)
             {
-                await Console.Out.WriteLineAsync($"Получены обновления прогресса пользователя - {user.UserId} - {user.FirstName}");
+                await Console.Out.WriteLineAsync($"Получены обновления прогресса пользователя - {user.FirstName} : {user.UserId}");
                 await Console.Out.WriteLineAsync($"День: {progress.CurrentDay} - Шаг обновления: {progress.CurrentStep}");
             }
             else

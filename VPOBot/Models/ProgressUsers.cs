@@ -158,9 +158,9 @@ namespace WORLDGAMEDEVELOPMENT
         {
             if (DateTime.UtcNow.ToLocalTime() < DateTimeOfTheNextStep && !IsTheNextStepSheduledInTime)
             {
-                if (_timerEvent != null && _timerEvent.Enabled == false)
+                if (_timerEvent == null)
                 {
-                    Console.WriteLine($"DateTimeOfTheNextStep == {DateTimeOfTheNextStep.ToLongDateString}");
+                    Console.WriteLine($"DateTimeOfTheNextStep == {DateTimeOfTheNextStep}");
                     _timerEvent = new Timer
                     {
                         Interval = (DateTimeOfTheNextStep - DateTime.UtcNow.ToLocalTime()).TotalMilliseconds,
@@ -172,7 +172,7 @@ namespace WORLDGAMEDEVELOPMENT
             }
             else if (!IsTheNextStepSheduledInTime && _timerEvent == null)
             {
-                Console.WriteLine($"DateTimeOfTheNextStep == null");
+                Console.WriteLine($"Текущее время больше > Времени следующего шага. Но следующий шаг, не был выполнен.");
                 _timerEvent = new Timer
                 {
                     Interval = 10000,

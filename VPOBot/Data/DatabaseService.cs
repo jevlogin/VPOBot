@@ -1,24 +1,26 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
+
 namespace WORLDGAMEDEVELOPMENT
 {
     internal sealed class DatabaseService
     {
         #region Fields
-
-        private readonly string _connectionString;
+        
+        private readonly DbContextOptionsBuilder<ApplicationDbContext> _optionBuilder;
         private readonly ApplicationDbContext _dbContext;
+        private readonly IConfigurationRoot _configuration;
+        private readonly string _connectionString;
 
         #endregion
 
         public DatabaseService(IConfigurationRoot configuration)
         {
             _connectionString = configuration.GetConnectionString(Configuration.DEFAULT_CONNECTION);
-
-            var optionBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
-
-            _dbContext = new ApplicationDbContext(optionBuilder.Options, configuration);
+            _configuration = configuration;
+            _optionBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
+            _dbContext = new ApplicationDbContext(_optionBuilder.Options, configuration);
         }
 
 
@@ -107,21 +109,29 @@ namespace WORLDGAMEDEVELOPMENT
             return progressList;
         }
 
+        #endregion
+
+        
+        #region UpdateProgressAsync
+        
         internal async Task<bool> UpdateUserProgressAsync(ProgressUsers progress)
         {
-            var existProgress = await _dbContext.ProgressUsers.FindAsync(progress.UserId);
-
-            if (existProgress == null)
+            using (var dbContext = new ApplicationDbContext(_optionBuilder.Options, _configuration))
             {
-                await _dbContext.ProgressUsers.AddAsync(progress);
-                await Console.Out.WriteLineAsync($"Был добавлен прогресс пользователя - {DialogData.SUCCESS}");
-            }
-            else
-            {
-                _dbContext.Entry(existProgress).CurrentValues.SetValues(progress);
-            }
+                var existProgress = await dbContext.ProgressUsers.FindAsync(progress.UserId);
 
-            await _dbContext.SaveChangesAsync();
+                if (existProgress == null)
+                {
+                    await dbContext.ProgressUsers.AddAsync(progress);
+                    await Console.Out.WriteLineAsync($"Был добавлен прогресс пользователя - {DialogData.SUCCESS}");
+                }
+                else
+                {
+                    dbContext.Entry(existProgress).CurrentValues.SetValues(progress);
+                }
+
+                await dbContext.SaveChangesAsync();
+            }
             return true;
         }
 

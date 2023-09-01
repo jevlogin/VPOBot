@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.Extensions.Configuration;
 
+
 namespace WORLDGAMEDEVELOPMENT
 {
     internal class ApplicationDbContext : DbContext
@@ -37,6 +38,7 @@ namespace WORLDGAMEDEVELOPMENT
         {
             var connectionString = _configuration.GetConnectionString(Configuration.DEFAULT_CONNECTION);
             optionsBuilder.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
+            //возникла ошибка подключения времени к базе данных
         }
 
 
