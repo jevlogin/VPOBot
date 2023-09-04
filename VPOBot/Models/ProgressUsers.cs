@@ -221,7 +221,7 @@ namespace WORLDGAMEDEVELOPMENT
         private void CheckEventNextDay(object? sender, ElapsedEventArgs e)
         {
             _currentStep = 1;
-            CurrentStep++;
+            CurrentDay++;
             if (_timerNextDay != null)
             {
                 TimerNextDayDispose();
