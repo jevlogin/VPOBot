@@ -284,13 +284,39 @@ namespace WORLDGAMEDEVELOPMENT
                 switch (progress.CurrentDay)
                 {
                     case 1:
+                        await Console.Out.WriteLineAsync("День 1");
                         await UpdateAsyncDay1(progress);
+
+                        break;
+                    case 2:
+                        await Console.Out.WriteLineAsync("День 2");
+                        await UpdateAsyncDay2(progress);
 
                         break;
                     default:
                         await Console.Out.WriteLineAsync($"Ошибка обновления прогресса пользователя.");
                         break;
                 }
+            }
+        }
+
+        private async Task UpdateAsyncDay2(ProgressUsers progress)
+        {
+            switch (progress.CurrentStep)
+            {
+                case 1:
+                    await Console.Out.WriteLineAsync("Обновление 2 день, шаг 1");
+                    await _botClient.SendTextMessageAsync(progress.UserId, GetStringFormatDialogUser(DialogData.GOOD_MORNING, progress.UserId));
+                    await _botClient.SendTextMessageAsync(progress.UserId, DialogData.DIALOG_DAY_2_STEP_1);
+
+                    await CreateMenuInlineKeyboardContinue(progress.UserId);
+                    break;
+                case 2:
+                    await Console.Out.WriteLineAsync("Обновление 2 день, шаг 2");
+
+                    break;
+                default:
+                    break;
             }
         }
 
@@ -370,7 +396,7 @@ namespace WORLDGAMEDEVELOPMENT
                             {
                                 SetNextTimeStepAddMinutes(userProgres, 3);
                                 await Pause(1000, 2000);
-                                SetNextDayInProgress(userProgres);
+                                SetNextDayHourInProgress(userProgres, 9);
                             }
                         }
                         catch (Exception ex)
@@ -398,9 +424,9 @@ namespace WORLDGAMEDEVELOPMENT
             userProgres.DateTimeOfTheNextStep = DateTime.UtcNow.ToLocalTime().AddMinutes(minutes);
         }
 
-        private void SetNextDayInProgress(ProgressUsers userProgres)
+        private void SetNextDayHourInProgress(ProgressUsers userProgres, int hour)
         {
-            userProgres.DateNextDayVPO = DateTime.Today.AddDays(1) + new TimeSpan(10, 0, 0);
+            userProgres.DateNextDayVPO = DateTime.Today.AddDays(1) + new TimeSpan(hour, 0, 0);
         }
 
         private string GetStringFormatDialogUser(string data, long userId)
@@ -714,6 +740,37 @@ namespace WORLDGAMEDEVELOPMENT
                         case "/помощь" or "помощь":
                             await CreateMenuInline(message.Chat.Id, cancellationToken);
                             break;
+                        case "дневник":
+                            if (commands[2] is { } foodDiarryCommand)
+                            {
+                                switch (foodDiarryCommand)
+                                {
+                                    case "питания":
+                                        Console.WriteLine("Выводим меню, Заполнить или вывести дневник");
+                                        await SendMessageCommingSoonAsync(message.Chat.Id, cancellationToken);
+
+                                        break;
+                                    default:
+                                        Console.WriteLine("Кто-то, что-то попутал.");
+                                        break;
+                                }
+                            }
+                            break;
+                        case "настройки":
+                            if (commands[2] is { } settingsUserCommand)
+                            {
+                                switch (settingsUserCommand)
+                                {
+                                    case "пользователя":
+                                        Console.WriteLine("Даем возможность пользователю, изменить настройки, перепрограммировать");
+                                        await SendMessageCommingSoonAsync(message.Chat.Id, cancellationToken);
+                                        break;
+                                    default:
+                                        Console.WriteLine("Кто-то, что-то попутал.");
+                                        break;
+                                }
+                            }
+                            break;
                         case "офлайн":
                             if (commands[2] is { } command3)
                             {
@@ -758,6 +815,11 @@ namespace WORLDGAMEDEVELOPMENT
             }
         }
 
+        private async Task SendMessageCommingSoonAsync(long id, CancellationToken cancellationToken)
+        {
+            await _botClient.SendTextMessageAsync(id, DialogData.THE_TECHNOLOGY_IS_UNDER_DEVELOPMENT, replyMarkup: new ReplyKeyboardRemove());
+        }
+
         private bool UserAutorization(long id)
         {
             return _userList.ContainsKey(id);
@@ -800,10 +862,14 @@ namespace WORLDGAMEDEVELOPMENT
             var helpButton = new KeyboardButton("/🔍 Помощь");
             var exitButton = new KeyboardButton("/🏠 Выход");
 
+            var foodDiarryButton = new KeyboardButton("/📖 Дневник питания");
+            var settingsButton = new KeyboardButton("/☸ Настройки пользователя");
+
             var replyKeyboard = new ReplyKeyboardMarkup(new[]
             {
                 new[] { consultationOnlineButton, consultationOfflineButton  },
-                new[] { helpButton, exitButton},
+                new[] { foodDiarryButton, settingsButton },
+                new[] { helpButton, exitButton },
             })
             {
                 ResizeKeyboard = true
