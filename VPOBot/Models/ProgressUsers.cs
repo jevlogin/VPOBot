@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
 using System.Timers;
 using Timer = System.Timers.Timer;
@@ -19,6 +20,7 @@ namespace WORLDGAMEDEVELOPMENT
         private int _currentDay;
         private int _currentStep;
         private bool _isTheNextStepSheduledInTime;
+        private bool _isTheNextDaysUpdateIsCompleted;
 
         private Timer _timerEvent;
         private Timer _timerNextDay;
@@ -72,6 +74,7 @@ namespace WORLDGAMEDEVELOPMENT
                 _dateNextDayVPO = value;
                 if (DateTime.Today < _dateNextDayVPO)
                 {
+                    IsTheNextDaysUpdateIsCompleted = false;
                     if (_timerNextDay != null)
                     {
                         TimerNextDayDispose();
@@ -100,6 +103,8 @@ namespace WORLDGAMEDEVELOPMENT
             }
         }
 
+
+        [Column]
         public bool IsTheNextStepSheduledInTime
         {
             get => _isTheNextStepSheduledInTime;
@@ -109,16 +114,31 @@ namespace WORLDGAMEDEVELOPMENT
             }
         }
 
+        [Column]
+        public bool IsTheNextDaysUpdateIsCompleted
+        {
+            get => _isTheNextDaysUpdateIsCompleted;
+            set
+            {
+                _isTheNextDaysUpdateIsCompleted = value;
+            }
+        }
+
+        [Column]
         public int CurrentDay
         {
             get => _currentDay;
             set
             {
                 _currentDay = value;
+                IsTheNextDaysUpdateIsCompleted = true;
+
+                UpdateState = UpdateState.FullUpdate;
             }
         }
 
 
+        [Column]
         public int CurrentStep
         {
             get => _currentStep;
@@ -129,6 +149,8 @@ namespace WORLDGAMEDEVELOPMENT
                 UpdateState = UpdateState.FullUpdate;
             }
         }
+
+        
 
         #endregion
 
@@ -160,7 +182,6 @@ namespace WORLDGAMEDEVELOPMENT
             {
                 if (_timerEvent == null)
                 {
-                    Console.WriteLine($"DateTimeOfTheNextStep == {DateTimeOfTheNextStep}");
                     _timerEvent = new Timer
                     {
                         Interval = (DateTimeOfTheNextStep - DateTime.UtcNow.ToLocalTime()).TotalMilliseconds,
@@ -172,7 +193,6 @@ namespace WORLDGAMEDEVELOPMENT
             }
             else if (!IsTheNextStepSheduledInTime && _timerEvent == null)
             {
-                Console.WriteLine($"Текущее время больше > Времени следующего шага. Но следующий шаг, не был выполнен.");
                 _timerEvent = new Timer
                 {
                     Interval = 10000,
@@ -188,7 +208,7 @@ namespace WORLDGAMEDEVELOPMENT
             IsTheNextStepSheduledInTime = true;
 
             CurrentStep++;
-            if(_timerEvent != null)
+            if (_timerEvent != null)
             {
                 TimerNextStepDispose();
             }
@@ -208,11 +228,15 @@ namespace WORLDGAMEDEVELOPMENT
         {
             if (DateTime.UtcNow.ToLocalTime() < DateNextDayVPO)
             {
+                if (_timerNextDay != null)
+                    _timerNextDay.Close();
+
                 _timerNextDay = new Timer
                 {
                     Interval = (DateNextDayVPO - DateTime.UtcNow.ToLocalTime()).TotalMilliseconds,
                     AutoReset = false
                 };
+
                 _timerNextDay.Elapsed += CheckEventNextDay;
                 _timerNextDay.Start();
             }

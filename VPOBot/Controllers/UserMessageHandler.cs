@@ -35,7 +35,7 @@ namespace WORLDGAMEDEVELOPMENT
                 foreach (var progress in _progressUsersList.Values)
                 {
                     progress.ProgressUpdated += ProgressUsersUpdated;
-                    if (!progress.IsTheNextStepSheduledInTime)
+                    if (!progress.IsTheNextStepSheduledInTime || !progress.IsTheNextDaysUpdateIsCompleted)
                     {
                         progress.UpdateState = UpdateState.UpdateDate;
                     }
@@ -313,6 +313,9 @@ namespace WORLDGAMEDEVELOPMENT
                     break;
                 case 2:
                     await Console.Out.WriteLineAsync("Обновление 2 день, шаг 2");
+                    await CreateMenuFoodDiaryAsync(progress.UserId, CancellationToken.None);
+                    //TODO - реализовать конфиг пользователя
+
 
                     break;
                 default:
@@ -396,7 +399,7 @@ namespace WORLDGAMEDEVELOPMENT
                             {
                                 SetNextTimeStepAddMinutes(userProgres, 3);
                                 await Pause(1000, 2000);
-                                SetNextDayHourInProgress(userProgres, 9);
+                                SetNextDayHourInProgress(userProgres, 5);
                             }
                         }
                         catch (Exception ex)
@@ -426,7 +429,8 @@ namespace WORLDGAMEDEVELOPMENT
 
         private void SetNextDayHourInProgress(ProgressUsers userProgres, int hour)
         {
-            userProgres.DateNextDayVPO = DateTime.Today.AddDays(1) + new TimeSpan(hour, 0, 0);
+            //userProgres.DateNextDayVPO = DateTime.Today.AddDays(1) + new TimeSpan(hour, 0, 0);
+            userProgres.DateNextDayVPO = DateTime.UtcNow.ToLocalTime().AddMinutes(hour);    //test 
         }
 
         private string GetStringFormatDialogUser(string data, long userId)
@@ -749,6 +753,8 @@ namespace WORLDGAMEDEVELOPMENT
                                         Console.WriteLine("Выводим меню, Заполнить или вывести дневник");
                                         await SendMessageCommingSoonAsync(message.Chat.Id, cancellationToken);
 
+
+
                                         break;
                                     default:
                                         Console.WriteLine("Кто-то, что-то попутал.");
@@ -895,6 +901,26 @@ namespace WORLDGAMEDEVELOPMENT
             }
         }
 
+        //TODO Делаем новую кнопку Дневник питания. даже целый раздел меню.
+        private async Task CreateMenuFoodDiaryAsync(long chatId, CancellationToken cancellationToken)
+        {
+            var webAppInfo = new WebAppInfo();
+            webAppInfo.Url = @"https://jevlogin.github.io/VPO/FoodDiary.html";
+
+            var button = new KeyboardButton("📖 Дневник питания");
+            button.WebApp = webAppInfo;
+
+            var replyKeyboard = new ReplyKeyboardMarkup(new[]
+            {
+                button
+            })
+            {
+                ResizeKeyboard = true
+            };
+
+            await _botClient.SendTextMessageAsync(chatId, "Для того чтобы открыть меню Дневника Питания, жми на конпку ниже 👇:", replyMarkup: replyKeyboard);
+        }
+
         private async Task CreateMenuKeyboardAuthUser(long chatId, CancellationToken cancellationToken)
         {
             var webAppInfo = new WebAppInfo();
@@ -924,7 +950,6 @@ namespace WORLDGAMEDEVELOPMENT
             var data = callbackQuery.Data;
 
             await Console.Out.WriteLineAsync($"Обрабатываю данные {data} в чате {chatId}");
-
 
             switch (data)
             {

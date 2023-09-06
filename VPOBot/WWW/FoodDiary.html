@@ -1,0 +1,140 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Запись на консультацию</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+    <link rel="stylesheet" href="css/styleRequestForConsultation.css">
+    <link href="css/FoodDiary.css" rel="stylesheet" />
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <h1 class="text-center mb-3" id="formType">Дневник питания</h1>
+        <form id="food-diary">
+            <div class="form-group">
+                <label for="date">Дата:</label>
+                <input type="date" class="form-control" id="date" name="date" required>
+            </div>
+
+            <div class="form-group">
+                <label for="weight">Вес:</label>
+                <input type="number" class="form-control" id="weight" name="weight">
+            </div>
+
+            <div class="form-group">
+                <label>Раздел приема пищи:</label>
+                <div class="row">
+                    <div class="col">
+                        <label for="mealTimeHours">Часы:</label>
+                        <input type="number" class="form-control" id="mealTimeHours" name="mealTimeHours" required>
+                    </div>
+                    <div class="col">
+                        <label for="mealTimeMinutes">Минуты:</label>
+                        <input type="number" class="form-control" id="mealTimeMinutes" name="mealTimeMinutes" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Прием пищи:</label>
+                <div class="form-check">
+                    <input type="radio" class="form-check-input" id="food" name="mealType" value="food" required>
+                    <label class="form-check-label" for="food">Еда</label>
+                </div>
+                <div class="form-check">
+                    <input type="radio" class="form-check-input" id="water" name="mealType" value="water" required>
+                    <label class="form-check-label" for="water">Вода</label>
+                </div>
+            </div>
+
+            <div id="waterAmountField" style="display: none;">
+                <div class="form-group">
+                    <label for="waterAmount">Количество воды:</label>
+                    <div class="input-group">
+                        <input type="number" class="form-control" id="waterAmount" name="waterAmount" placeholder="Введите количество в миллилитрах">
+                        <span class="input-group-text">мл</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="foodFields" style="display: none;">
+                <div class="form-group">
+                    <label for="dishName">Название блюда:</label>
+                    <input type="text" class="form-control" id="dishName" name="dishName" placeholder="Введите название блюда (чай, кофе, это тоже еда)">
+                </div>
+
+                <div class="form-group">
+                    <label>Потребление:</label>
+                    <div class="form-check">
+                        <input type="radio" class="form-check-input" id="eatForHunger" name="eatPurpose" value="hunger">
+                        <label class="form-check-label" for="eatForHunger">Для устранения голода</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="radio" class="form-check-input" id="eatForHealth" name="eatPurpose" value="health">
+                        <label class="form-check-label" for="eatForHealth">Для улучшения здоровья</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="radio" class="form-check-input" id="eatForWeight" name="eatPurpose" value="weight">
+                        <label class="form-check-label" for="eatForWeight">Для контроля веса</label>
+                    </div>
+                </div>
+
+
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="proteinCheck" name="proteinCheck">
+                    <label class="form-check-label" for="proteinCheck">Белок</label>
+                </div>
+                <div class="form-group" id="proteinAmountField" style="display: none;">
+                    <div class="input-group">
+                        <label for="proteinAmount">Количество белка:</label>
+                        <input type="number" class="form-control" id="proteinAmount" name="proteinAmount">
+                        <span class="input-group-text">грамм</span>
+                    </div>
+                </div>
+
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="fatCheck" name="fatCheck">
+                    <label class="form-check-label" for="fatCheck">Жиры</label>
+                </div>
+                <div class="form-group" id="fatAmountField" style="display: none;">
+                    <div class="input-group">
+                        <label for="fatAmount">Количество жиров:</label>
+                        <input type="number" class="form-control" id="fatAmount" name="fatAmount">
+                        <span class="input-group-text">грамм</span>
+                    </div>
+                </div>
+
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="carbohydrateCheck" name="carbohydrateCheck">
+                    <label class="form-check-label" for="carbohydrateCheck">Углеводы</label>
+                </div>
+                <div class="form-group" id="carbohydrateAmountField" style="display: none;">
+                    <div class="input-group">
+                        <label for="carbohydrateAmount">Количество углеводов:</label>
+                        <input type="number" class="form-control" id="carbohydrateAmount" name="carbohydrateAmount">
+                        <span class="input-group-text">грамм</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="cost">Затраты:</label>
+                <div class="input-group">
+                    <input type="number" class="form-control" id="cost" name="cost" placeholder="Примерная стоимость блюда (в рублях)" required>
+                    <span class="input-group-text">рублей</span>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Отправить</button>
+        </form>
+
+        <script src="js/foodDiary.js"></script>
+    </div>
+</body>
+
+</html>
