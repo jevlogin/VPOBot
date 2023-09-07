@@ -14,7 +14,7 @@
 
 <body>
     <div class="container">
-        <h1 class="text-center mb-3" id="formType">Дневник питания</h1>
+        <h1 class="text-center mb-3" id="formType" name="formType" value="FoodDiary">Дневник питания</h1>
         <form id="food-diary">
             <div class="form-group">
                 <label for="date">Дата:</label>
@@ -23,11 +23,14 @@
 
             <div class="form-group">
                 <label for="weight">Вес:</label>
-                <input type="number" class="form-control" id="weight" name="weight">
+                <div class="input-group">
+                    <input type="number" class="form-control" id="weight" name="weight" placeholder="Введите свой вес в кг">
+                    <span class="input-group-text">кг</span>
+                </div>
             </div>
 
             <div class="form-group">
-                <label>Раздел приема пищи:</label>
+                <label>Время приема пищи</label>
                 <div class="row">
                     <div class="col">
                         <label for="mealTimeHours">Часы:</label>
@@ -90,8 +93,8 @@
                     <label class="form-check-label" for="proteinCheck">Белок</label>
                 </div>
                 <div class="form-group" id="proteinAmountField" style="display: none;">
+                    <label for="proteinAmount">Количество белка:</label>
                     <div class="input-group">
-                        <label for="proteinAmount">Количество белка:</label>
                         <input type="number" class="form-control" id="proteinAmount" name="proteinAmount">
                         <span class="input-group-text">грамм</span>
                     </div>
@@ -102,8 +105,8 @@
                     <label class="form-check-label" for="fatCheck">Жиры</label>
                 </div>
                 <div class="form-group" id="fatAmountField" style="display: none;">
+                    <label for="fatAmount">Количество жиров:</label>
                     <div class="input-group">
-                        <label for="fatAmount">Количество жиров:</label>
                         <input type="number" class="form-control" id="fatAmount" name="fatAmount">
                         <span class="input-group-text">грамм</span>
                     </div>
@@ -114,8 +117,8 @@
                     <label class="form-check-label" for="carbohydrateCheck">Углеводы</label>
                 </div>
                 <div class="form-group" id="carbohydrateAmountField" style="display: none;">
+                    <label for="carbohydrateAmount">Количество углеводов:</label>
                     <div class="input-group">
-                        <label for="carbohydrateAmount">Количество углеводов:</label>
                         <input type="number" class="form-control" id="carbohydrateAmount" name="carbohydrateAmount">
                         <span class="input-group-text">грамм</span>
                     </div>
@@ -134,6 +137,7 @@
         </form>
 
         <script src="js/foodDiary.js"></script>
+        <script src="js/foodDiaryCallback.js"></script>
     </div>
 </body>
 

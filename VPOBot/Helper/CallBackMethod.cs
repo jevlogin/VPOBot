@@ -2,8 +2,9 @@
 {
     internal enum CallBackMethod
     {
-        None = 0,
-        UserIntroduction = 1,
-        UserRequestForConsultation = 2,
+        None                        = 0,
+        UserIntroduction            = 1,
+        UserRequestForConsultation  = 2,
+        FoodDiaryFilling            = 3,
     }
 }
