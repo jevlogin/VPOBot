@@ -1,6 +1,6 @@
 ﻿namespace WORLDGAMEDEVELOPMENT
 {
-    internal enum DishType
+    internal enum MealType
     {
         None    = 0,
         Water   = 1,

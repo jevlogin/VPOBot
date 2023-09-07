@@ -27,12 +27,23 @@ if (tg) {
         let dishName = document.getElementById("dishName").value;
 
         let eatPurposeRadios = document.querySelectorAll("input[name='eatPurpose']");
-        let eatPurpose = "";
+        let eatPurposeType = "";
         for (const radio of eatPurposeRadios) {
             if (radio.checked) {
-                eatPurpose = radio.value;
+                eatPurposeType = radio.value;
                 break;
             }
+        }
+
+        let eatPurpose = "";
+        if (eatPurposeType === "hunger") {
+            eatPurpose = "Hunger"
+        } else if (eatPurposeType === "health") {
+            eatPurpose = "Health"
+        } else if (eatPurposeType === "weight") {
+            eatPurpose = "Weight"
+        } else {
+            eatPurpose = "None";
         }
 
         let proteinCheck = document.getElementById("proteinCheck").checked;
@@ -45,10 +56,11 @@ if (tg) {
 
 
         let dishType;
-        if (mealType === "Еда") {
+        if (mealType === "food") {
             dishType = "Eat";
-        } else if (mealType === "Вода") {
+        } else if (mealType === "water") {
             dishType = "Water";
+            eatPurpose = "Health";
         } else {
             dishType = "None";
         }
@@ -59,11 +71,13 @@ if (tg) {
         }
 
         let formData = {
+            id: 0,
             userID: 0,
             date: date,
             weight: weight,
-            mealTime: `${mealTimeHours}:${mealTimeMinutes}`,
-            mealType: mealType,
+            mealTimeHours: mealTimeHours,
+            mealTimeMinutes: mealTimeMinutes,
+            mealType: dishType,
             waterAmount: waterAmount,
             dishName: dishName,
             eatPurpose: eatPurpose,

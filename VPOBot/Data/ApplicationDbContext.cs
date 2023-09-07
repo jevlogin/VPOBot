@@ -8,7 +8,7 @@ namespace WORLDGAMEDEVELOPMENT
     internal class ApplicationDbContext : DbContext
     {
         #region Fields
-        
+
         private readonly IConfigurationRoot _configuration;
 
         #endregion
@@ -18,7 +18,8 @@ namespace WORLDGAMEDEVELOPMENT
 
         public DbSet<UserVPO> Users { get; set; }
         public DbSet<UserAdmin> UsersAdmin { get; set; }
-        public DbSet<ProgressUsers>ProgressUsers { get; set; }
+        public DbSet<ProgressUsers> ProgressUsers { get; set; }
+        public DbSet<FoodDiaryEntry> FoodDiary { get; set; }
 
         #endregion
 
@@ -38,7 +39,6 @@ namespace WORLDGAMEDEVELOPMENT
         {
             var connectionString = _configuration.GetConnectionString(Configuration.DEFAULT_CONNECTION);
             optionsBuilder.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
-            //возникла ошибка подключения времени к базе данных
         }
 
 
@@ -47,12 +47,19 @@ namespace WORLDGAMEDEVELOPMENT
             modelBuilder.Entity<UserAdmin>(ConfigureAdmin);
             modelBuilder.Entity<ProgressUsers>(ConfigureProgress);
             modelBuilder.Entity<UserVPO>(ConfigureUsers);
+            modelBuilder.Entity<FoodDiaryEntry>(ConfigureFoodDiary);
         }
 
         #endregion
 
 
         #region Methods
+
+        private void ConfigureFoodDiary(EntityTypeBuilder<FoodDiaryEntry> entity)
+        {
+            entity.ToTable(nameof(FoodDiaryEntry));
+            entity.HasKey(fd => fd.Id);
+        }
 
         private void ConfigureAdmin(EntityTypeBuilder<UserAdmin> entity)
         {

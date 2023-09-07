@@ -526,6 +526,45 @@ namespace WORLDGAMEDEVELOPMENT
             {
                 switch (callBackType)
                 {
+                    case CallBackMethod.FoodDiaryFilling:
+                        Console.WriteLine(CallBackMethod.FoodDiaryFilling);
+                        JObject foodDiaryForm = (JObject)parseArray[1];
+                        var foodDiary = foodDiaryForm.ToObject<FoodDiaryEntry>();
+
+                        if (foodDiary != null)
+                        {
+                            foodDiary.UserId = message.From.Id;
+
+                            Console.WriteLine(foodDiary.ToString());
+
+                            if (!_userList.Keys.Contains(foodDiary.UserId))
+                            {
+                                await _botClient.SendTextMessageAsync(message.From.Id, $"Данная функция доступна, только авторизованным пользователям.\n\n");
+                                await Pause(1000, 2000);
+                                await _botClient.SendTextMessageAsync(message.From.Id, $"Вот так могла бы выглядеть Ваша запись:\n\n");
+                                await Pause(1000, 2000);
+                                await _botClient.SendTextMessageAsync(message.From.Id, foodDiary.ToString());
+                                await Pause(4000, 6000);
+                                await _botClient.SendTextMessageAsync(message.From.Id, $"Предлагаю Вам пройти быструю регистрацию, чтобы пользоваться сервисом в полном объеме.\n");
+                                await CreateMenuKeyboardAuthUser(message.From.Id, cancellationToken);
+                            }
+                            else
+                            {
+                                //TODO - вносим в базу данных.
+                                //обновляем данные. не сохраняем в локальную версию, так как записей, может быть очень много. ну или сохранять последний день только. 
+                                await _databaseService.AddFoodDiaryAsync(foodDiary);
+                                await Pause(1000, 2000);
+                                await _botClient.SendTextMessageAsync(message.From.Id, $"Вот Ваша запись:\n\n");
+                                await Pause(1000, 2000);
+                                await _botClient.SendTextMessageAsync(message.From.Id, foodDiary.ToString());
+                                await Pause(1000, 2000);
+                                await _botClient.SendTextMessageAsync(message.From.Id, $"Вы можете посмотреть свой дневник в соответствующем пункте меню.\n");
+
+                            }
+                        }
+
+
+                        break;
                     case CallBackMethod.UserIntroduction:
                         JObject vpoForm = (JObject)parseArray[1];
                         var user = vpoForm.ToObject<UserVPO>();
@@ -539,7 +578,7 @@ namespace WORLDGAMEDEVELOPMENT
                                 await AddedNewUserToLocalUserList(user);
 
                                 var greeting = DialogData.GREETING_TEMPLATES_STRING_FORMAT[_random.Next(0, DialogData.GREETING_TEMPLATES_STRING_FORMAT.Length)];
-                                string greetingMessage = string.Format(greeting, user.FirstName);
+                                string greetingMessage = GetStringFormatDialogUser(greeting, user.UserId);
                                 var msgToUserIntro = await _botClient.SendTextMessageAsync(message.Chat.Id, greetingMessage, parseMode: ParseMode.Html);
                                 await Pause(1000);
 
@@ -750,10 +789,7 @@ namespace WORLDGAMEDEVELOPMENT
                                 switch (foodDiarryCommand)
                                 {
                                     case "питания":
-                                        Console.WriteLine("Выводим меню, Заполнить или вывести дневник");
-                                        await SendMessageCommingSoonAsync(message.Chat.Id, cancellationToken);
-
-
+                                        await CreateMenuFoodDiaryAsync(message.Chat.Id, cancellationToken);
 
                                         break;
                                     default:
@@ -901,24 +937,28 @@ namespace WORLDGAMEDEVELOPMENT
             }
         }
 
-        //TODO Делаем новую кнопку Дневник питания. даже целый раздел меню.
+
         private async Task CreateMenuFoodDiaryAsync(long chatId, CancellationToken cancellationToken)
         {
-            var webAppInfo = new WebAppInfo();
-            webAppInfo.Url = @"https://jevlogin.github.io/VPO/FoodDiary.html";
+            var webApp = new WebAppInfo();
+            webApp.Url = @"https://jevlogin.github.io/VPO/FoodDiary.html";
+            var buttonFillingFoodDiary = new KeyboardButton("📖 Заполнить дневник");
+            buttonFillingFoodDiary.WebApp = webApp;
 
-            var button = new KeyboardButton("📖 Дневник питания");
-            button.WebApp = webAppInfo;
+            var webAppReadFoodDiary = new WebAppInfo();
+            webAppReadFoodDiary.Url = @"https://jevlogin.github.io/VPO/FoodDiary.html";
+            var buttonReadFoodDiary = new KeyboardButton("📖 Прочитать дневник");
+            buttonReadFoodDiary.WebApp = webAppReadFoodDiary;
 
             var replyKeyboard = new ReplyKeyboardMarkup(new[]
             {
-                button
+                new[] { buttonFillingFoodDiary, buttonReadFoodDiary },
             })
             {
                 ResizeKeyboard = true
             };
 
-            await _botClient.SendTextMessageAsync(chatId, "Для того чтобы открыть меню Дневника Питания, жми на конпку ниже 👇:", replyMarkup: replyKeyboard);
+            await _botClient.SendTextMessageAsync(chatId, DialogData.CHOOSE_ONE_OF_THE_OPTIONS, replyMarkup: replyKeyboard);
         }
 
         private async Task CreateMenuKeyboardAuthUser(long chatId, CancellationToken cancellationToken)

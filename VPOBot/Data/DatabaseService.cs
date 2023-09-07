@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-
+using Microsoft.Extensions.Options;
 
 namespace WORLDGAMEDEVELOPMENT
 {
@@ -11,15 +11,14 @@ namespace WORLDGAMEDEVELOPMENT
         private readonly DbContextOptionsBuilder<ApplicationDbContext> _optionBuilder;
         private readonly ApplicationDbContext _dbContext;
         private readonly IConfigurationRoot _configuration;
-        private readonly string _connectionString;
 
         #endregion
 
         public DatabaseService(IConfigurationRoot configuration)
         {
-            _connectionString = configuration.GetConnectionString(Configuration.DEFAULT_CONNECTION);
-            _configuration = configuration;
             _optionBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
+            _configuration = configuration;
+
             _dbContext = new ApplicationDbContext(_optionBuilder.Options, configuration);
         }
 
@@ -155,6 +154,27 @@ namespace WORLDGAMEDEVELOPMENT
 
             await _dbContext.SaveChangesAsync();
         }
+
+        #endregion
+
+        
+        #region AddFoodDiaryAsync
+        
+        internal async Task AddFoodDiaryAsync(FoodDiaryEntry foodDiary)
+        {
+            var existingFoodDiary = await _dbContext.FoodDiary.SingleOrDefaultAsync(x => x.Id == foodDiary.Id && x.UserId == foodDiary.UserId);
+            if (existingFoodDiary == null)
+            {
+                await _dbContext.FoodDiary.AddAsync(foodDiary);
+                await Console.Out.WriteLineAsync($"Была добавлена новая запис в дневник питания, в базу данных");
+            }
+            else
+            {
+                _dbContext.Entry(existingFoodDiary).CurrentValues.SetValues(foodDiary);
+            }
+
+        await _dbContext.SaveChangesAsync();
+        } 
 
         #endregion
     }
