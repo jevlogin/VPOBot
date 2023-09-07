@@ -429,8 +429,7 @@ namespace WORLDGAMEDEVELOPMENT
 
         private void SetNextDayHourInProgress(ProgressUsers userProgres, int hour)
         {
-            //userProgres.DateNextDayVPO = DateTime.Today.AddDays(1) + new TimeSpan(hour, 0, 0);
-            userProgres.DateNextDayVPO = DateTime.UtcNow.ToLocalTime().AddMinutes(hour);    //test 
+            userProgres.DateNextDayVPO = DateTime.Today.AddDays(1) + new TimeSpan(hour, 0, 0);
         }
 
         private string GetStringFormatDialogUser(string data, long userId)
