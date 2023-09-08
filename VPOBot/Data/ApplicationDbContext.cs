@@ -20,6 +20,7 @@ namespace WORLDGAMEDEVELOPMENT
         public DbSet<UserAdmin> UsersAdmin { get; set; }
         public DbSet<ProgressUsers> ProgressUsers { get; set; }
         public DbSet<FoodDiaryEntry> FoodDiary { get; set; }
+        public DbSet<UserBotSettings> UserBotSettings { get; set; }
 
         #endregion
 
@@ -48,12 +49,19 @@ namespace WORLDGAMEDEVELOPMENT
             modelBuilder.Entity<ProgressUsers>(ConfigureProgress);
             modelBuilder.Entity<UserVPO>(ConfigureUsers);
             modelBuilder.Entity<FoodDiaryEntry>(ConfigureFoodDiary);
+            modelBuilder.Entity<UserBotSettings>(ConfigureUserBotSettings);
         }
 
         #endregion
 
 
         #region Methods
+
+        private void ConfigureUserBotSettings(EntityTypeBuilder<UserBotSettings> entity)
+        {
+            entity.ToTable(nameof(UserBotSettings));
+            entity.HasKey(fd => fd.UserId);
+        }
 
         private void ConfigureFoodDiary(EntityTypeBuilder<FoodDiaryEntry> entity)
         {

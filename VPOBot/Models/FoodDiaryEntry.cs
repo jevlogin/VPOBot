@@ -29,12 +29,9 @@ namespace WORLDGAMEDEVELOPMENT
         {
             var stringBuilder = new StringBuilder();
 
-            stringBuilder.Append("UserId: ");
-            stringBuilder.Append(UserId);
-
             if (Date != null)
             {
-                stringBuilder.Append(",\n Дата: ");
+                stringBuilder.Append("Дата: ");
                 stringBuilder.Append(Date.ToString("dd MMMM yyyy года", CultureInfo.GetCultureInfo("ru-RU")));
             }
 

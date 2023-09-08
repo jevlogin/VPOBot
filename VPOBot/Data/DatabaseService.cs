@@ -1,13 +1,13 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
+
 
 namespace WORLDGAMEDEVELOPMENT
 {
     internal sealed class DatabaseService
     {
         #region Fields
-        
+
         private readonly DbContextOptionsBuilder<ApplicationDbContext> _optionBuilder;
         private readonly ApplicationDbContext _dbContext;
         private readonly IConfigurationRoot _configuration;
@@ -110,9 +110,9 @@ namespace WORLDGAMEDEVELOPMENT
 
         #endregion
 
-        
+
         #region UpdateProgressAsync
-        
+
         internal async Task<bool> UpdateUserProgressAsync(ProgressUsers progress)
         {
             using (var dbContext = new ApplicationDbContext(_optionBuilder.Options, _configuration))
@@ -157,10 +157,10 @@ namespace WORLDGAMEDEVELOPMENT
 
         #endregion
 
-        
-        #region AddFoodDiaryAsync
-        
-        internal async Task AddFoodDiaryAsync(FoodDiaryEntry foodDiary)
+
+        #region AddOrUpdateFoodDiaryAsync
+
+        internal async Task AddOrUpdateFoodDiaryAsync(FoodDiaryEntry foodDiary)
         {
             var existingFoodDiary = await _dbContext.FoodDiary.SingleOrDefaultAsync(x => x.Id == foodDiary.Id && x.UserId == foodDiary.UserId);
             if (existingFoodDiary == null)
@@ -173,9 +173,55 @@ namespace WORLDGAMEDEVELOPMENT
                 _dbContext.Entry(existingFoodDiary).CurrentValues.SetValues(foodDiary);
             }
 
-        await _dbContext.SaveChangesAsync();
-        } 
+            await _dbContext.SaveChangesAsync();
+        }
 
+        internal async Task<List<FoodDiaryEntry>> ReadTheFoodDiaryForTheCurrentDay(long id, CancellationToken cancellationToken)
+        {
+            var foodDiaryEntries = _dbContext.FoodDiary.Where(entry => entry.UserId == id && entry.Date == DateTime.Now.Date).ToList();
+            return foodDiaryEntries;
+        }
+
+        #endregion
+
+
+        #region AddOrUpdateBotSettingsAsync
+
+        internal async Task AddOrUpdateBotSettingsAsync(UserBotSettings userBotSettings)
+        {
+            var existingSettings = await _dbContext.UserBotSettings.SingleOrDefaultAsync(botConfig => botConfig.UserId == userBotSettings.UserId);
+            if (existingSettings == null)
+            {
+                await _dbContext.UserBotSettings.AddAsync(userBotSettings);
+                await Console.Out.WriteLineAsync($"Была добавлена новая запис в дневник питания, в базу данных");
+            }
+            else
+            {
+                _dbContext.Entry(existingSettings).CurrentValues.SetValues(userBotSettings);
+            }
+
+            await _dbContext.SaveChangesAsync();
+        }
+
+        //internal async Task<UserBotSettings?> ReadUserBotSettings(long id, CancellationToken cancellationToken)
+        //{
+        //    var userBotSettings = await _dbContext.UserBotSettings.FindAsync(id);
+        //    if (userBotSettings == null)
+        //    {
+        //        return null;
+        //    }
+        //    return userBotSettings;
+        //}
+
+        internal async Task<EmptyBotSettings> ReadUserBotSettings(long id, CancellationToken cancellationToken)
+        {
+            var userBotSettings = await _dbContext.UserBotSettings.FindAsync(id);
+            if (userBotSettings == null)
+            {
+                return new EmptyBotSettings();
+            }
+            return userBotSettings;
+        }
         #endregion
     }
 }

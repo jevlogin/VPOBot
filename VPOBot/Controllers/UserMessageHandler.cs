@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
+using System;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
@@ -168,7 +169,9 @@ namespace WORLDGAMEDEVELOPMENT
 
                             await _botClient.SendTextMessageAsync(message.Chat.Id, $"Данные получены! ❤ 👌 ✔", replyMarkup: new ReplyKeyboardRemove());
                             await Pause(500);
+
                             await ParseWebAppData(message, webAppData, cancellationToken);
+
                             break;
                         case MessageType.VideoChatScheduled:
                             break;
@@ -313,7 +316,7 @@ namespace WORLDGAMEDEVELOPMENT
                     break;
                 case 2:
                     await Console.Out.WriteLineAsync("Обновление 2 день, шаг 2");
-                    await CreateMenuFoodDiaryAsync(progress.UserId, CancellationToken.None);
+                    //await CreateMenuFoodDiaryAsync(progress.UserId, CancellationToken.None);
                     //TODO - реализовать конфиг пользователя
 
 
@@ -408,13 +411,10 @@ namespace WORLDGAMEDEVELOPMENT
                             throw;
                         }
                     }
-
                     await _botClient.SendTextMessageAsync(progress.UserId, DialogData.BOT_ANSWER_GOODBUY, parseMode: ParseMode.Html);
                     break;
                 case 6:
-                    //TODO - здесь будем выводить информацию за последний шаг, чтобы пользователь смог вспомнить, на чем он остановился..
                     await _botClient.SendTextMessageAsync(progress.UserId, DialogData.REMINDER_OF_DAY_1, parseMode: ParseMode.Html);
-
                     break;
                 default:
                     await Console.Out.WriteLineAsync($"Пользователь с id - {progress.UserId} вытворяет фокусы");
@@ -519,14 +519,61 @@ namespace WORLDGAMEDEVELOPMENT
             var parseArray = JArray.Parse(webAppData.Data);
 
             JObject messageDataInfoType = (JObject)parseArray[0];
-            var messageInfo = messageDataInfoType.ToObject<MessageDataInfoType>();
+
+            MessageDataInfoType messageInfo;
+
+            try
+            {
+                messageInfo = messageDataInfoType.ToObject<MessageDataInfoType>();
+            }
+            catch (Exception exception)
+            {
+                await Console.Out.WriteLineAsync($"Возникло исключение:\n\n{exception}");
+                return;
+            }
 
             if (messageInfo is { } msgInfo && msgInfo.CallBackMethod is { } callBackType)
             {
                 switch (callBackType)
                 {
+                    case CallBackMethod.BotConfig:
+                        await Console.Out.WriteLineAsync($"Мы получили настройки пользователя.");
+                        JObject botSettingsObject = (JObject)parseArray[1];
+                        UserBotSettings userBotSettings;
+                        try
+                        {
+                            userBotSettings = botSettingsObject.ToObject<UserBotSettings>();
+                        }
+                        catch (Exception ex)
+                        {
+                            await Console.Out.WriteLineAsync($"Возникло исключение:\n\n{ex}");
+                            return;
+                        }
+                        userBotSettings!.UserId = message.From.Id;
+
+                        if (!_userList.Keys.Contains(userBotSettings!.UserId))
+                        {
+                            await _botClient.SendTextMessageAsync(message.From.Id, $"Данная функция доступна, только авторизованным пользователям.\n\n");
+                            await Pause(1000, 2000);
+                            await _botClient.SendTextMessageAsync(message.From.Id, $"Вот так могли бы выглядеть Ваши настройки:\n\n");
+                            await Pause(1000, 2000);
+                            await WriteUserBotSettingsAsync(message, userBotSettings);
+                            await _botClient.SendTextMessageAsync(message.From.Id, $"Предлагаю Вам пройти быструю регистрацию, чтобы пользоваться сервисом в полном объеме.\n");
+                            await CreateMenuKeyboardAuthUser(message.From.Id, cancellationToken);
+                        }
+                        else
+                        {
+                            await _databaseService.AddOrUpdateBotSettingsAsync(userBotSettings);
+                            await Pause(1000, 2000);
+                            await _botClient.SendTextMessageAsync(message.From.Id, $"Вот Ваша запись:\n\n");
+                            await Pause(1000, 2000);
+                            await WriteUserBotSettingsAsync(message, userBotSettings);
+                            await _botClient.SendTextMessageAsync(message.From.Id, $"Вы можете быстро посмотреть свои настройки в соответствующем пункте меню.\n");
+                        }
+
+                        break;
                     case CallBackMethod.FoodDiaryFilling:
-                        Console.WriteLine(CallBackMethod.FoodDiaryFilling);
+
                         JObject foodDiaryForm = (JObject)parseArray[1];
                         var foodDiary = foodDiaryForm.ToObject<FoodDiaryEntry>();
 
@@ -549,16 +596,13 @@ namespace WORLDGAMEDEVELOPMENT
                             }
                             else
                             {
-                                //TODO - вносим в базу данных.
-                                //обновляем данные. не сохраняем в локальную версию, так как записей, может быть очень много. ну или сохранять последний день только. 
-                                await _databaseService.AddFoodDiaryAsync(foodDiary);
+                                await _databaseService.AddOrUpdateFoodDiaryAsync(foodDiary);
                                 await Pause(1000, 2000);
                                 await _botClient.SendTextMessageAsync(message.From.Id, $"Вот Ваша запись:\n\n");
                                 await Pause(1000, 2000);
                                 await _botClient.SendTextMessageAsync(message.From.Id, foodDiary.ToString());
                                 await Pause(1000, 2000);
                                 await _botClient.SendTextMessageAsync(message.From.Id, $"Вы можете посмотреть свой дневник в соответствующем пункте меню.\n");
-
                             }
                         }
 
@@ -649,6 +693,12 @@ namespace WORLDGAMEDEVELOPMENT
                         break;
                 }
             }
+        }
+        
+        private async Task WriteUserBotSettingsAsync(Message message, EmptyBotSettings userBotSettings)
+        {
+            await _botClient.SendTextMessageAsync(message.From.Id, userBotSettings.ToString(), parseMode: ParseMode.Html);
+            await Pause(1500, 3000);
         }
 
         private async Task SendingAMessageToTheAdministratorAboutAnAppointmentForAnOnlineConsultation(UserRequestConsultationOnline userFormRequest, CancellationToken cancellationToken)
@@ -797,6 +847,30 @@ namespace WORLDGAMEDEVELOPMENT
                                 }
                             }
                             break;
+                        case "прочитать":
+                            if (commands[2] is { } foodDiarryFilling)
+                            {
+                                switch (foodDiarryFilling)
+                                {
+                                    case "дневник":
+                                        await Console.Out.WriteLineAsync($"мы нажали прочитать дневник питания");
+                                        var foodDiaryList = await _databaseService.ReadTheFoodDiaryForTheCurrentDay(message.Chat.Id, cancellationToken);
+                                        await Pause(1000, 1500);
+                                        await _botClient.SendTextMessageAsync(message.Chat.Id, DialogData.BORDER_FRUIT, cancellationToken: cancellationToken);
+                                        foreach (var foodDiary in foodDiaryList)
+                                        {
+                                            await _botClient.SendTextMessageAsync(message.Chat.Id, foodDiary.ToString(), cancellationToken: cancellationToken);
+                                        }
+                                        await Pause(1000, 1500);
+                                        await _botClient.SendTextMessageAsync(message.Chat.Id, DialogData.BORDER_FRUIT, cancellationToken: cancellationToken);
+
+                                        break;
+                                    default:
+                                        Console.WriteLine("Кто-то, что-то попутал.");
+                                        break;
+                                }
+                            }
+                            break;
                         case "настройки":
                             if (commands[2] is { } settingsUserCommand)
                             {
@@ -804,7 +878,15 @@ namespace WORLDGAMEDEVELOPMENT
                                 {
                                     case "пользователя":
                                         Console.WriteLine("Даем возможность пользователю, изменить настройки, перепрограммировать");
-                                        await SendMessageCommingSoonAsync(message.Chat.Id, cancellationToken);
+                                        await CreateMenuSettingsBotAsync(message.Chat.Id, cancellationToken);
+
+                                        break;
+                                    case "посмотреть":
+                                        await Console.Out.WriteLineAsync($"Кто-то хочет узнать настройки, а значит их надо где-то хранить.");
+                                        var settingsUser = await _databaseService.ReadUserBotSettings(message.Chat.Id, cancellationToken);
+
+                                        await WriteUserBotSettingsAsync(message, settingsUser);
+
                                         break;
                                     default:
                                         Console.WriteLine("Кто-то, что-то попутал.");
@@ -854,6 +936,26 @@ namespace WORLDGAMEDEVELOPMENT
                     }
                 }
             }
+        }
+
+        private async Task CreateMenuSettingsBotAsync(long chatId, CancellationToken cancellationToken)
+        {
+            var webApp = new WebAppInfo();
+            webApp.Url = @"https://jevlogin.github.io/VPO/BotConfig.html";
+            var buttonChangeSettings = new KeyboardButton("/🛠️ Изменить настройки");
+            buttonChangeSettings.WebApp = webApp;
+
+            var buttonReadSettings = new KeyboardButton("/🧑🏻‍💻 Настройки посмотреть");
+
+            var replyKeyboard = new ReplyKeyboardMarkup(new[]
+            {
+                new[] { buttonChangeSettings, buttonReadSettings },
+            })
+            {
+                ResizeKeyboard = true
+            };
+
+            await _botClient.SendTextMessageAsync(chatId, DialogData.CHOOSE_ONE_OF_THE_OPTIONS, replyMarkup: replyKeyboard);
         }
 
         private async Task SendMessageCommingSoonAsync(long id, CancellationToken cancellationToken)
@@ -941,13 +1043,10 @@ namespace WORLDGAMEDEVELOPMENT
         {
             var webApp = new WebAppInfo();
             webApp.Url = @"https://jevlogin.github.io/VPO/FoodDiary.html";
-            var buttonFillingFoodDiary = new KeyboardButton("📖 Заполнить дневник");
+            var buttonFillingFoodDiary = new KeyboardButton("/📖 Заполнить дневник");
             buttonFillingFoodDiary.WebApp = webApp;
 
-            var webAppReadFoodDiary = new WebAppInfo();
-            webAppReadFoodDiary.Url = @"https://jevlogin.github.io/VPO/FoodDiary.html";
-            var buttonReadFoodDiary = new KeyboardButton("📖 Прочитать дневник");
-            buttonReadFoodDiary.WebApp = webAppReadFoodDiary;
+            var buttonReadFoodDiary = new KeyboardButton("/📖 Прочитать дневник");
 
             var replyKeyboard = new ReplyKeyboardMarkup(new[]
             {
