@@ -355,6 +355,23 @@ namespace WORLDGAMEDEVELOPMENT
                         await _botClient.SendTextMessageAsync(admin, $"Пользователь {_userList[progress.UserId].FirstName}, требует внимания и живого общения.");
                     }
 
+                    if (progress.IsTheNextDaysUpdateIsCompleted)
+                    {
+                        try
+                        {
+                            if (_progressUsersList.TryGetValue(progress.UserId, out var userProgres))
+                            {
+                                SetNextDayHourInProgress(userProgres, 9);
+                                await Pause(1000, 2000);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            await Console.Out.WriteLineAsync($"Произошла ошибка изменения времени следующего шага и дня.\nПодробнее - {ex.Message}");
+                            throw;
+                        }
+                    }
+
                     break;
             }
         }
@@ -435,7 +452,7 @@ namespace WORLDGAMEDEVELOPMENT
                             {
                                 SetNextTimeStepAddMinutes(userProgres, 3);
                                 await Pause(1000, 2000);
-                                SetNextDayHourInProgress(userProgres, 5);
+                                SetNextDayHourInProgress(userProgres, 9);
                             }
                         }
                         catch (Exception ex)
@@ -462,7 +479,10 @@ namespace WORLDGAMEDEVELOPMENT
 
         private void SetNextDayHourInProgress(ProgressUsers userProgres, int hour)
         {
-            userProgres.DateNextDayVPO = DateTime.Today.AddDays(1) + new TimeSpan(hour, 0, 0);
+            var tomorrow = DateTime.Today.AddDays(1);
+            var nextDay = new DateTime(tomorrow.Year, tomorrow.Month, tomorrow.Day, hour, 0, 0);
+
+            userProgres.DateNextDayVPO = nextDay;
         }
 
         private string GetStringFormatDialogUser(string data, long userId)
