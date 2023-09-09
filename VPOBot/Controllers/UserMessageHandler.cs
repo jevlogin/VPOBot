@@ -316,12 +316,45 @@ namespace WORLDGAMEDEVELOPMENT
                     break;
                 case 2:
                     await Console.Out.WriteLineAsync("Обновление 2 день, шаг 2");
-                    //await CreateMenuFoodDiaryAsync(progress.UserId, CancellationToken.None);
                     //TODO - реализовать конфиг пользователя
-
+                    await _botClient.SendTextMessageAsync(progress.UserId, $"При вызове меню, у вас появится возможность изменить настройки пользователя, или посмотреть их.");
+                    await Pause(1500, 2000);
+                    await CreateMenuSettingsBotAsync(progress.UserId, CancellationToken.None);
+                    if (progress.IsTheNextStepSheduledInTime)
+                    {
+                        try
+                        {
+                            if (_progressUsersList.TryGetValue(progress.UserId, out var userProgres))
+                            {
+                                SetNextTimeStepAddMinutes(userProgres, 3);
+                                await Pause(1000, 2000);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            await Console.Out.WriteLineAsync($"Произошла ошибка изменения времени следующего шага и дня.\nПодробнее - {ex.Message}");
+                            throw;
+                        }
+                    }
+                    break;
+                case 3:
+                    await _botClient.SendTextMessageAsync(progress.UserId, $"{_userList[progress.UserId].FirstName}, надеюсь ты уже успел освоить новый пункт меню и нам пора двигаться дальше!\n" +
+                        $"Ты готов?");
+                    await Pause(2000);
+                    await CreateMenuInlineKeyboardContinue(progress.UserId);
 
                     break;
                 default:
+                    await _botClient.SendTextMessageAsync(progress.UserId, $"{_userList[progress.UserId].FirstName}, Дальше общение, пока только в живом формате. Твой Персональный консультант уже в курсе, что хочешь с ним связаться.");
+                    await Pause(2000, 2500);
+                    await _botClient.SendTextMessageAsync(progress.UserId, $"{_userList[progress.UserId].FirstName}, Напоминаю, ты также можешь задавать свои вопросы, прямо в чат бота.");
+                    await Pause(1000, 2000);
+                    
+                    foreach (var admin in _adminList.Keys)
+                    {
+                        await _botClient.SendTextMessageAsync(admin, $"Пользователь {_userList[progress.UserId].FirstName}, требует внимания и живого общения.");
+                    }
+
                     break;
             }
         }
