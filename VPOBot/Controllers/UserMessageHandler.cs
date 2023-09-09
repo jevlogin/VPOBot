@@ -349,7 +349,7 @@ namespace WORLDGAMEDEVELOPMENT
                     await Pause(2000, 2500);
                     await _botClient.SendTextMessageAsync(progress.UserId, $"{_userList[progress.UserId].FirstName}, Напоминаю, ты также можешь задавать свои вопросы, прямо в чат бота.");
                     await Pause(1000, 2000);
-                    
+
                     foreach (var admin in _adminList.Keys)
                     {
                         await _botClient.SendTextMessageAsync(admin, $"Пользователь {_userList[progress.UserId].FirstName}, требует внимания и живого общения.");
@@ -430,20 +430,50 @@ namespace WORLDGAMEDEVELOPMENT
                     await Pause(500, 2000);
 
                     await _botClient.SendTextMessageAsync(progress.UserId, DialogData.INTRODUCTORY_INFORMATION_ABOUT_THE_TRIP, parseMode: ParseMode.Html);
-                    await Pause(700, 3000);
-
-                    await ActivateMethodSendBookStart(progress.UserId, CancellationToken.None);
                     await Pause(1000, 2000);
+
+                    await _botClient.SendTextMessageAsync(progress.UserId, "Вы спросите какой еще такой дневник?", parseMode: ParseMode.Html);
+                    await Pause(700, 2000);
+
+                    await _botClient.SendTextMessageAsync(progress.UserId, DialogData.WHAT_IS_FOODDIARY_1, parseMode: ParseMode.Html);
+                    await Pause(700, 2000);
+
+                    await _botClient.SendTextMessageAsync(progress.UserId, DialogData.WHAT_IS_FOODDIARY_2, parseMode: ParseMode.Html);
+                    await Pause(700, 2000);
+                    await _botClient.SendTextMessageAsync(progress.UserId, "Это пока все, что Вам надо знать, на данном этапе.", parseMode: ParseMode.Html);
+                    await Pause(700, 2000);
 
                     await _botClient.SendTextMessageAsync(progress.UserId, DialogData.INTRODUCTORY_INFORMATION_ABOUT_THE_TRIP_2, parseMode: ParseMode.Html);
                     await Pause(1200, 3000);
 
-                    await ActivateMethodUserSendInstructionVPO(progress.UserId, CancellationToken.None);
-                    await Pause(500, 1000);
-
-                    await ActivateMethodUserOfHowToFillOutAFoodDiary(progress.UserId, CancellationToken.None);
-                    await Pause(1000, 2000);
-
+                    if (progress.IsTheNextStepSheduledInTime)
+                    {
+                        try
+                        {
+                            if (_progressUsersList.TryGetValue(progress.UserId, out var userProgres))
+                            {
+                                SetNextTimeStepAddMinutes(userProgres, 3);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            await Console.Out.WriteLineAsync($"Произошла ошибка изменения времени следующего шага и дня.\nПодробнее - {ex.Message}");
+                            throw;
+                        }
+                    }
+                    await _botClient.SendTextMessageAsync(progress.UserId, DialogData.BOT_ANSWER_GOODBUY, parseMode: ParseMode.Html);
+                    break;
+                case 6:
+                    await _botClient.SendTextMessageAsync(progress.UserId, DialogData.WHAT_IS_FOODDIARY_3, parseMode: ParseMode.Html);
+                    await Pause(700, 2000);
+                    await _botClient.SendTextMessageAsync(progress.UserId, DialogData.SECRET_PASHAL_1, parseMode: ParseMode.Html);
+                    await Pause(700, 2000);
+                    await _botClient.SendTextMessageAsync(progress.UserId, DialogData.INTRODUCTORY_INFORMATION_ABOUT_THE_TRIP_2, parseMode: ParseMode.Html);
+                    await Pause(700, 2000);
+                    await _botClient.SendTextMessageAsync(progress.UserId, DialogData.VPO_PROGRAM_ZOOM, parseMode: ParseMode.Html);
+                    await Pause(700, 2000);
+                    await _botClient.SendTextMessageAsync(progress.UserId, DialogData.BOT_ANSWER_GOODBUY, parseMode: ParseMode.Html);
+                    
                     if (progress.IsTheNextStepSheduledInTime)
                     {
                         try
@@ -461,13 +491,27 @@ namespace WORLDGAMEDEVELOPMENT
                             throw;
                         }
                     }
-                    await _botClient.SendTextMessageAsync(progress.UserId, DialogData.BOT_ANSWER_GOODBUY, parseMode: ParseMode.Html);
-                    break;
-                case 6:
-                    await _botClient.SendTextMessageAsync(progress.UserId, DialogData.REMINDER_OF_DAY_1, parseMode: ParseMode.Html);
+
+
                     break;
                 default:
-                    await Console.Out.WriteLineAsync($"Пользователь с id - {progress.UserId} вытворяет фокусы");
+                    await _botClient.SendTextMessageAsync(progress.UserId, DialogData.REMINDER_OF_DAY_1, parseMode: ParseMode.Html);
+
+                    if (progress.IsTheNextDaysUpdateIsCompleted)
+                    {
+                        try
+                        {
+                            if (_progressUsersList.TryGetValue(progress.UserId, out var userProgres))
+                            {
+                                SetNextDayHourInProgress(userProgres, 9);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            await Console.Out.WriteLineAsync($"Произошла ошибка изменения времени следующего шага и дня.\nПодробнее - {ex.Message}");
+                            throw;
+                        }
+                    }
                     break;
             }
         }
@@ -697,7 +741,6 @@ namespace WORLDGAMEDEVELOPMENT
                         }
 
                         break;
-
                     case CallBackMethod.UserRequestForConsultation:
 
                         Console.WriteLine($"Получены данные: \"Заявка на консультацию\"");
@@ -747,7 +790,7 @@ namespace WORLDGAMEDEVELOPMENT
                 }
             }
         }
-        
+
         private async Task WriteUserBotSettingsAsync(Message message, EmptyBotSettings userBotSettings)
         {
             await _botClient.SendTextMessageAsync(message.From.Id, userBotSettings.ToString(), parseMode: ParseMode.Html);
@@ -852,7 +895,7 @@ namespace WORLDGAMEDEVELOPMENT
                             var predstavitsya_1 = "https://raw.githubusercontent.com/jevlogin/VPO/main/images/Intro1.jpg";
                             var predstavitsya_2 = "https://raw.githubusercontent.com/jevlogin/VPO/main/images/Intro2.jpg";
 
-                            await _botClient.SendTextMessageAsync(message.Chat.Id, "Кнопка представиться ниже!!! Вот наглядно где она");
+                            await _botClient.SendTextMessageAsync(message.Chat.Id, "⬇️ Кнопка предствиться ниже ⬇️:");
                             await SendPhotoAsync(message.Chat.Id, predstavitsya_1);
                             await Pause(1000, 2000);
                             await _botClient.SendTextMessageAsync(message.Chat.Id, "Еслии ты ее не видишь, жми на 4 квадратика!!! Вот наглядно куда нажать надо.");
@@ -1128,7 +1171,7 @@ namespace WORLDGAMEDEVELOPMENT
                 ResizeKeyboard = true
             };
 
-            await _botClient.SendTextMessageAsync(chatId, "Кнопка предствиться ниже ⬇⬇⬇👇:", replyMarkup: replyKeyboard);
+            await _botClient.SendTextMessageAsync(chatId, DialogData.BUTTON_AUTH_DOWN, replyMarkup: replyKeyboard);
         }
 
         private async Task HandleCallBackQueryAsync(CallbackQuery callbackQuery, CancellationToken cancellationToken)

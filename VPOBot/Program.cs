@@ -14,7 +14,7 @@ namespace WORLDGAMEDEVELOPMENT
                .AddJsonFile("appsettings.json")
                .Build();
 
-            var botKey = configuration[key: Configuration.BOT_KEY_NAME];
+            var botKey = configuration[key: Configuration.BOT_KEY_NAME_RELEASE];
             await Console.Out.WriteLineAsync($"BotKey: {botKey}");
 
             var botClient = new TelegramBotClient(botKey);
