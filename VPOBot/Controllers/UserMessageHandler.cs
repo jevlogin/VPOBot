@@ -424,24 +424,31 @@ namespace WORLDGAMEDEVELOPMENT
 
                     break;
                 case 5:
-                    var msgCongratulations = DialogData.USER_CONGRATILATORY_RESPONSES_ANSWER[_random.Next(0, DialogData.USER_CONGRATILATORY_RESPONSES_ANSWER.Length)];
-
-                    await _botClient.SendTextMessageAsync(progress.UserId, msgCongratulations, parseMode: ParseMode.Html, replyMarkup: new ReplyKeyboardRemove());
-                    await Pause(500, 2000);
-
                     await _botClient.SendTextMessageAsync(progress.UserId, DialogData.INTRODUCTORY_INFORMATION_ABOUT_THE_TRIP, parseMode: ParseMode.Html);
                     await Pause(1000, 2000);
 
-                    await _botClient.SendTextMessageAsync(progress.UserId, "Вы спросите какой еще такой дневник?", parseMode: ParseMode.Html);
-                    await Pause(700, 2000);
+                    var aquaGirlPercent80 = "https://raw.githubusercontent.com/jevlogin/VPO/main/images/aqua_girl_percent80.jpg";
+                    await SendPhotoAsync(progress.UserId, aquaGirlPercent80);
+                    await Pause(2000);
+
+                    await _botClient.SendTextMessageAsync(progress.UserId, DialogData.WHAT_DOES_A_PERSON_CONSIST_OF, parseMode: ParseMode.Html);
+                    await Pause(2000, 4000);
+
+                    await _botClient.SendTextMessageAsync(progress.UserId, "Вы спросите какой еще такой дневник?\n\nДа вот же он -", parseMode: ParseMode.Html);
+                    await Pause(2000, 3000);
+
+                    var foodDiaryImage = "https://raw.githubusercontent.com/jevlogin/VPO/main/images/foodDiaryImage.jpg";
+                    await SendPhotoAsync(progress.UserId, foodDiaryImage);
+                    await Pause(2000);
 
                     await _botClient.SendTextMessageAsync(progress.UserId, DialogData.WHAT_IS_FOODDIARY_1, parseMode: ParseMode.Html);
-                    await Pause(700, 2000);
+                    await Pause(1000, 2000);
 
                     await _botClient.SendTextMessageAsync(progress.UserId, DialogData.WHAT_IS_FOODDIARY_2, parseMode: ParseMode.Html);
-                    await Pause(700, 2000);
+                    await Pause(1000, 2000);
+
                     await _botClient.SendTextMessageAsync(progress.UserId, "Это пока все, что Вам надо знать, на данном этапе.", parseMode: ParseMode.Html);
-                    await Pause(700, 2000);
+                    await Pause(1000, 2000);
 
                     await _botClient.SendTextMessageAsync(progress.UserId, DialogData.INTRODUCTORY_INFORMATION_ABOUT_THE_TRIP_2, parseMode: ParseMode.Html);
                     await Pause(1200, 3000);
