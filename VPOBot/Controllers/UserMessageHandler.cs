@@ -902,7 +902,6 @@ namespace WORLDGAMEDEVELOPMENT
                             var predstavitsya_1 = "https://raw.githubusercontent.com/jevlogin/VPO/main/images/Intro1.jpg";
                             var predstavitsya_2 = "https://raw.githubusercontent.com/jevlogin/VPO/main/images/Intro2.jpg";
 
-                            await _botClient.SendTextMessageAsync(message.Chat.Id, "⬇️ Кнопка предствиться ниже ⬇️:");
                             await SendPhotoAsync(message.Chat.Id, predstavitsya_1);
                             await Pause(1000, 2000);
                             await _botClient.SendTextMessageAsync(message.Chat.Id, "Еслии ты ее не видишь, жми на 4 квадратика!!! Вот наглядно куда нажать надо.");
