@@ -15,7 +15,7 @@ namespace WORLDGAMEDEVELOPMENT
         public event Action<ProgressUsers>? ProgressUpdated;
 
         private DateTime _dateTimeOfTheNextStep;
-        private DateTime _dateNextDayVPO;
+        private DateTime _dateNextDay;
         private UpdateState _updateState = UpdateState.None;
         private int _currentDay;
         private int _currentStep;
@@ -66,13 +66,13 @@ namespace WORLDGAMEDEVELOPMENT
         }
 
         [Column]
-        public DateTime DateNextDayVPO
+        public DateTime DateNextDay
         {
-            get => _dateNextDayVPO;
+            get => _dateNextDay;
             set
             {
-                _dateNextDayVPO = value;
-                if (DateTime.Today < _dateNextDayVPO)
+                _dateNextDay = value;
+                if (DateTime.Today < _dateNextDay)
                 {
                     IsTheNextDaysUpdateIsCompleted = false;
                     if (_timerNextDay != null)
@@ -165,8 +165,9 @@ namespace WORLDGAMEDEVELOPMENT
             _currentDay = currentDay;
             _currentStep = currentStep;
             _dateTimeOfTheNextStep = dateTimeOfTheNextStep;
-            _dateNextDayVPO = dateNextDayVPO;
+            _dateNextDay = dateNextDayVPO;
             _isTheNextStepSheduledInTime = isTheNextStepSheduledInTime;
+            _isTheNextDaysUpdateIsCompleted = isTheNextStepSheduledInTime;
             _updateState = updateState;
         }
 
@@ -226,14 +227,14 @@ namespace WORLDGAMEDEVELOPMENT
 
         private void StartCheckingDailyProgressUpdates()
         {
-            if (DateTime.UtcNow.ToLocalTime() < DateNextDayVPO)
+            if (DateTime.UtcNow.ToLocalTime() < DateNextDay)
             {
                 if (_timerNextDay != null)
                     _timerNextDay.Close();
 
                 _timerNextDay = new Timer
                 {
-                    Interval = (DateNextDayVPO - DateTime.UtcNow.ToLocalTime()).TotalMilliseconds,
+                    Interval = (DateNextDay - DateTime.UtcNow.ToLocalTime()).TotalMilliseconds,
                     AutoReset = false
                 };
 

@@ -361,8 +361,7 @@ namespace WORLDGAMEDEVELOPMENT
                         {
                             if (_progressUsersList.TryGetValue(progress.UserId, out var userProgres))
                             {
-                                SetNextDayHourInProgress(userProgres, 9);
-                                await Pause(1000, 2000);
+                                await SetNextDayDefaultOrUserSettings(progress.UserId, userProgres);
                             }
                         }
                         catch (Exception ex)
@@ -372,6 +371,24 @@ namespace WORLDGAMEDEVELOPMENT
                     }
 
                     break;
+            }
+        }
+
+        private async Task SetNextDayDefaultOrUserSettings(long userId, ProgressUsers userProgres)
+        {
+            var userSettings = await _databaseService.ReadUserBotSettings(userId, CancellationToken.None) as UserBotSettings;
+            if (userSettings != null)
+            {
+                if (userSettings.MorningTime is { } time && time.Hours is { } hour)
+                {
+                    SetNextDayHourInProgress(userProgres, hour);
+                    await Pause(1000, 2000);
+                }
+            }
+            else
+            {
+                SetNextDayHourInProgress(userProgres, 9);
+                await Pause(1000, 2000);
             }
         }
 
@@ -478,7 +495,7 @@ namespace WORLDGAMEDEVELOPMENT
                     await _botClient.SendTextMessageAsync(progress.UserId, DialogData.VPO_PROGRAM_ZOOM, parseMode: ParseMode.Html);
                     await Pause(700, 2000);
                     await _botClient.SendTextMessageAsync(progress.UserId, DialogData.BOT_ANSWER_GOODBUY, parseMode: ParseMode.Html);
-                    
+
                     if (progress.IsTheNextStepSheduledInTime)
                     {
                         try
@@ -487,7 +504,7 @@ namespace WORLDGAMEDEVELOPMENT
                             {
                                 SetNextTimeStepAddMinutes(userProgres, 3);
                                 await Pause(1000, 2000);
-                                SetNextDayHourInProgress(userProgres, 9);
+                                await SetNextDayDefaultOrUserSettings(progress.UserId, userProgres);
                             }
                         }
                         catch (Exception ex)
@@ -529,7 +546,7 @@ namespace WORLDGAMEDEVELOPMENT
             var tomorrow = DateTime.Today.AddDays(1);
             var nextDay = new DateTime(tomorrow.Year, tomorrow.Month, tomorrow.Day, hour, 0, 0);
 
-            userProgres.DateNextDayVPO = nextDay;
+            userProgres.DateNextDay = nextDay;
         }
 
         private string GetStringFormatDialogUser(string data, long userId)
@@ -723,7 +740,7 @@ namespace WORLDGAMEDEVELOPMENT
                                 var greeting = DialogData.GREETING_TEMPLATES_STRING_FORMAT[_random.Next(0, DialogData.GREETING_TEMPLATES_STRING_FORMAT.Length)];
                                 string greetingMessage = GetStringFormatDialogUser(greeting, user.UserId);
                                 var msgToUserIntro = await _botClient.SendTextMessageAsync(message.Chat.Id, greetingMessage, parseMode: ParseMode.Html);
-                                await Pause(1000);
+                                await Pause(2000);
 
                                 if (msgToUserIntro != null)
                                 {

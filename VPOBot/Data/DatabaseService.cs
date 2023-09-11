@@ -203,16 +203,6 @@ namespace WORLDGAMEDEVELOPMENT
             await _dbContext.SaveChangesAsync();
         }
 
-        //internal async Task<UserBotSettings?> ReadUserBotSettings(long id, CancellationToken cancellationToken)
-        //{
-        //    var userBotSettings = await _dbContext.UserBotSettings.FindAsync(id);
-        //    if (userBotSettings == null)
-        //    {
-        //        return null;
-        //    }
-        //    return userBotSettings;
-        //}
-
         internal async Task<EmptyBotSettings> ReadUserBotSettings(long id, CancellationToken cancellationToken)
         {
             var userBotSettings = await _dbContext.UserBotSettings.FindAsync(id);
