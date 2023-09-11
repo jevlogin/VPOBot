@@ -3,6 +3,11 @@
 FROM mcr.microsoft.com/dotnet/runtime:6.0 AS base
 WORKDIR /app
 
+# Установка времени
+RUN rm -rf /etc/localtime \
+    && ln -s /usr/share/zoneinfo/Europe/Moscow /etc/localtime \
+    && echo "Europe/Moscow" > /etc/timezone
+
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
 COPY ["VPOBot/VPOBot.csproj", "VPOBot/"]
