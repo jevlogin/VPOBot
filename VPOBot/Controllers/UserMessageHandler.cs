@@ -316,7 +316,6 @@ namespace WORLDGAMEDEVELOPMENT
                     break;
                 case 2:
                     await Console.Out.WriteLineAsync("Обновление 2 день, шаг 2");
-                    //TODO - реализовать конфиг пользователя
                     await _botClient.SendTextMessageAsync(progress.UserId, $"При вызове меню, у вас появится возможность изменить настройки пользователя, или посмотреть их.");
                     await Pause(1500, 2000);
                     await CreateMenuSettingsBotAsync(progress.UserId, CancellationToken.None);
@@ -326,26 +325,27 @@ namespace WORLDGAMEDEVELOPMENT
                         {
                             if (_progressUsersList.TryGetValue(progress.UserId, out var userProgres))
                             {
-                                SetNextTimeStepAddMinutes(userProgres, 3);
+                                SetNextTimeStepAddMinutes(userProgres, 5);
                                 await Pause(1000, 2000);
                             }
                         }
                         catch (Exception ex)
                         {
                             await Console.Out.WriteLineAsync($"Произошла ошибка изменения времени следующего шага и дня.\nПодробнее - {ex.Message}");
-                            throw;
                         }
                     }
                     break;
                 case 3:
-                    await _botClient.SendTextMessageAsync(progress.UserId, $"{_userList[progress.UserId].FirstName}, надеюсь ты уже успел освоить новый пункт меню и нам пора двигаться дальше!\n" +
-                        $"Ты готов?");
+                    await _botClient.SendTextMessageAsync(progress.UserId, $"{_userList[progress.UserId].FirstName}, " +
+                        $"Надеюсь ты уже успел освоить новый пункт меню и нам пора двигаться дальше!\nТы готов?", replyMarkup: new ReplyKeyboardRemove());
                     await Pause(2000);
                     await CreateMenuInlineKeyboardContinue(progress.UserId);
 
                     break;
+
                 default:
-                    await _botClient.SendTextMessageAsync(progress.UserId, $"{_userList[progress.UserId].FirstName}, Дальше общение, пока только в живом формате. Твой Персональный консультант уже в курсе, что хочешь с ним связаться.");
+                    await _botClient.SendTextMessageAsync(progress.UserId, $"{_userList[progress.UserId].FirstName}, " +
+                        $"Дальше общение, пока только в живом формате. Твой Персональный консультант уже в курсе, что хочешь с ним связаться.");
                     await Pause(2000, 2500);
                     await _botClient.SendTextMessageAsync(progress.UserId, $"{_userList[progress.UserId].FirstName}, Напоминаю, ты также можешь задавать свои вопросы, прямо в чат бота.");
                     await Pause(1000, 2000);
@@ -368,7 +368,6 @@ namespace WORLDGAMEDEVELOPMENT
                         catch (Exception ex)
                         {
                             await Console.Out.WriteLineAsync($"Произошла ошибка изменения времени следующего шага и дня.\nПодробнее - {ex.Message}");
-                            throw;
                         }
                     }
 
@@ -465,7 +464,6 @@ namespace WORLDGAMEDEVELOPMENT
                         catch (Exception ex)
                         {
                             await Console.Out.WriteLineAsync($"Произошла ошибка изменения времени следующего шага и дня.\nПодробнее - {ex.Message}");
-                            throw;
                         }
                     }
                     await _botClient.SendTextMessageAsync(progress.UserId, DialogData.BOT_ANSWER_GOODBUY, parseMode: ParseMode.Html);
@@ -495,7 +493,6 @@ namespace WORLDGAMEDEVELOPMENT
                         catch (Exception ex)
                         {
                             await Console.Out.WriteLineAsync($"Произошла ошибка изменения времени следующего шага и дня.\nПодробнее - {ex.Message}");
-                            throw;
                         }
                     }
 
@@ -516,7 +513,6 @@ namespace WORLDGAMEDEVELOPMENT
                         catch (Exception ex)
                         {
                             await Console.Out.WriteLineAsync($"Произошла ошибка изменения времени следующего шага и дня.\nПодробнее - {ex.Message}");
-                            throw;
                         }
                     }
                     break;
