@@ -158,14 +158,14 @@ namespace WORLDGAMEDEVELOPMENT
         #region ClassLifeCycles
 
         [JsonConstructor]
-        public ProgressUsers(long userId, int currentDay, int currentStep, DateTime dateTimeOfTheNextStep, DateTime dateNextDayVPO,
+        public ProgressUsers(long userId, int currentDay, int currentStep, DateTime dateTimeOfTheNextStep, DateTime dateNextDay,
             bool isTheNextStepSheduledInTime, UpdateState updateState)
         {
             UserId = userId;
             _currentDay = currentDay;
             _currentStep = currentStep;
             _dateTimeOfTheNextStep = dateTimeOfTheNextStep;
-            _dateNextDay = dateNextDayVPO;
+            _dateNextDay = dateNextDay;
             _isTheNextStepSheduledInTime = isTheNextStepSheduledInTime;
             _isTheNextDaysUpdateIsCompleted = isTheNextStepSheduledInTime;
             _updateState = updateState;
