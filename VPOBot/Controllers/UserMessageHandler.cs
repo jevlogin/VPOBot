@@ -308,32 +308,17 @@ namespace WORLDGAMEDEVELOPMENT
             switch (progress.CurrentStep)
             {
                 case 1:
-                    await Console.Out.WriteLineAsync("Обновление 2 день, шаг 1");
                     await _botClient.SendTextMessageAsync(progress.UserId, GetStringFormatDialogUser(DialogData.GOOD_MORNING, progress.UserId));
                     await _botClient.SendTextMessageAsync(progress.UserId, DialogData.DIALOG_DAY_2_STEP_1);
 
                     await CreateMenuInlineKeyboardContinue(progress.UserId);
                     break;
                 case 2:
-                    await Console.Out.WriteLineAsync("Обновление 2 день, шаг 2");
-                    await _botClient.SendTextMessageAsync(progress.UserId, $"При вызове меню, у вас появится возможность изменить настройки пользователя, или посмотреть их.");
+                    await _botClient.SendTextMessageAsync(progress.UserId, DialogData.DIALOG_DAY_2_STEP_2, parseMode: ParseMode.Html);
                     await Pause(1500, 2000);
                     await CreateMenuSettingsBotAsync(progress.UserId, CancellationToken.None);
-                    if (progress.IsTheNextStepSheduledInTime)
-                    {
-                        try
-                        {
-                            if (_progressUsersList.TryGetValue(progress.UserId, out var userProgres))
-                            {
-                                SetNextTimeStepAddMinutes(userProgres, 5);
-                                await Pause(1000, 2000);
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            await Console.Out.WriteLineAsync($"Произошла ошибка изменения времени следующего шага и дня.\nПодробнее - {ex.Message}");
-                        }
-                    }
+                    await SetNextStepTimeAsync(progress, 5);
+
                     break;
                 case 3:
                     await _botClient.SendTextMessageAsync(progress.UserId, $"{_userList[progress.UserId].FirstName}, " +
@@ -342,10 +327,48 @@ namespace WORLDGAMEDEVELOPMENT
                     await CreateMenuInlineKeyboardContinue(progress.UserId);
 
                     break;
+                case 4:
+                    await _botClient.SendTextMessageAsync(progress.UserId, DialogData.DIALOG_DAY_2_STEP_4, parseMode: ParseMode.Html);
+                    await Pause(2000, 3000);
+                    await CreateMenuInlineKeyboardContinue(progress.UserId);
+                    break;
 
+                case 5:
+                    await _botClient.SendTextMessageAsync(progress.UserId, DialogData.DIALOG_DAY_2_STEP_5, parseMode: ParseMode.Html);
+                    await Pause(2000, 3000);
+
+                    await SetNextStepTimeAsync(progress, 180);
+                    await Pause(1000, 2000);
+
+                    if (_progressUsersList.TryGetValue(progress.UserId, out var userProgres))
+                    {
+                        userProgres.CurrentStep++;
+                    }
+
+                    break;
+                case 6:
+                    await _botClient.SendTextMessageAsync(progress.UserId, DialogData.DIALOG_DAY_2_STEP_6);
+
+                    break;
+                case 7:
+                    await _botClient.SendTextMessageAsync(progress.UserId, DialogData.DIALOG_DAY_2_STEP_7_1, parseMode: ParseMode.Html);
+                    await Pause(2000, 4000);
+
+                    await _botClient.SendTextMessageAsync(progress.UserId, DialogData.DIALOG_DAY_2_STEP_7_2, parseMode: ParseMode.Html);
+                    await Pause(1000, 2000);
+                    
+                    await SetNextStepTimeAsync(progress, 5);
+
+                    break;
+                case 8:
+                    await _botClient.SendTextMessageAsync(progress.UserId, DialogData.DIALOG_DAY_2_STEP_8, parseMode: ParseMode.Html);
+                    await Pause(2000);
+
+                    await SetNextDayDefaultOrUserSettings(progress.UserId, progress);
+
+                    break;
                 default:
-                    await _botClient.SendTextMessageAsync(progress.UserId, $"{_userList[progress.UserId].FirstName}, " +
-                        $"Дальше общение, пока только в живом формате. Твой Персональный консультант уже в курсе, что хочешь с ним связаться.");
+                    await _botClient.SendTextMessageAsync(progress.UserId, GetStringFormatDialogUser(DialogData.DIALOG_DEFAULT_CASE_1, progress.UserId));
                     await Pause(2000, 2500);
                     await _botClient.SendTextMessageAsync(progress.UserId, $"{_userList[progress.UserId].FirstName}, Напоминаю, ты также можешь задавать свои вопросы, прямо в чат бота.");
                     await Pause(1000, 2000);
@@ -355,40 +378,50 @@ namespace WORLDGAMEDEVELOPMENT
                         await _botClient.SendTextMessageAsync(admin, $"Пользователь {_userList[progress.UserId].FirstName}, требует внимания и живого общения.");
                     }
 
-                    if (progress.IsTheNextDaysUpdateIsCompleted)
-                    {
-                        try
-                        {
-                            if (_progressUsersList.TryGetValue(progress.UserId, out var userProgres))
-                            {
-                                await SetNextDayDefaultOrUserSettings(progress.UserId, userProgres);
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            await Console.Out.WriteLineAsync($"Произошла ошибка изменения времени следующего шага и дня.\nПодробнее - {ex.Message}");
-                        }
-                    }
+                    await SetNextDayDefaultOrUserSettings(progress.UserId, progress);
 
                     break;
             }
         }
 
-        private async Task SetNextDayDefaultOrUserSettings(long userId, ProgressUsers userProgres)
+        private async Task SetNextStepTimeAsync(ProgressUsers progress, int time)
         {
-            var userSettings = await _databaseService.ReadUserBotSettings(userId, CancellationToken.None) as UserBotSettings;
-            if (userSettings != null)
+            if (progress.IsTheNextStepSheduledInTime)
             {
-                if (userSettings.MorningTime is { } time && time.Hours is { } hour)
+                try
                 {
-                    SetNextDayHourInProgress(userProgres, hour);
-                    await Pause(1000, 2000);
+                    if (_progressUsersList.TryGetValue(progress.UserId, out var userProgres))
+                    {
+                        SetNextTimeStepAddMinutes(userProgres, time);
+                        await Pause(1000, 2000);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    await Console.Out.WriteLineAsync($"Произошла ошибка изменения времени следующего шага и дня.\nПодробнее - {ex.Message}");
                 }
             }
             else
             {
-                SetNextDayHourInProgress(userProgres, 9);
-                await Pause(1000, 2000);
+                await Console.Out.WriteLineAsync(DialogData.NOT_CHANGE_NEXT_STEP);
+            }
+        }
+
+        private async Task SetNextDayDefaultOrUserSettings(long userId, ProgressUsers userProgres)
+        {
+            if (userProgres.IsTheNextDaysUpdateIsCompleted)
+            {
+                var userSettings = await _databaseService.ReadUserBotSettings(userId, CancellationToken.None) as UserBotSettings;
+                if (userSettings is { } settings && settings.MorningTime is { } time && time.Hours is { } hour)
+                {
+                    SetNextDayHourInProgress(userProgres, hour);
+                    await Pause(1000, 2000);
+                }
+                else
+                {
+                    SetNextDayHourInProgress(userProgres, 9);
+                    await Pause(1000, 2000);
+                } 
             }
         }
 
@@ -402,8 +435,7 @@ namespace WORLDGAMEDEVELOPMENT
                     await CreateMenuInlineKeyboardContinue(progress.UserId);
                     break;
                 case 1:
-                    await _botClient.SendTextMessageAsync(progress.UserId,
-                                DialogData.USER_VPO_OFFLINE_DAY_1_STEP_1, replyMarkup: new ReplyKeyboardRemove());
+                    await _botClient.SendTextMessageAsync(progress.UserId, DialogData.USER_VPO_OFFLINE_DAY_1_STEP_1, replyMarkup: new ReplyKeyboardRemove());
                     await Pause(2000);
                     //TODO - Тут добавить кейсы, результаты...
                     await SendingTheResultsOfTheProgramParticipants(progress.UserId);
@@ -469,20 +501,9 @@ namespace WORLDGAMEDEVELOPMENT
                     await _botClient.SendTextMessageAsync(progress.UserId, DialogData.INTRODUCTORY_INFORMATION_ABOUT_THE_TRIP_2, parseMode: ParseMode.Html);
                     await Pause(1200, 3000);
 
-                    if (progress.IsTheNextStepSheduledInTime)
-                    {
-                        try
-                        {
-                            if (_progressUsersList.TryGetValue(progress.UserId, out var userProgres))
-                            {
-                                SetNextTimeStepAddMinutes(userProgres, 3);
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            await Console.Out.WriteLineAsync($"Произошла ошибка изменения времени следующего шага и дня.\nПодробнее - {ex.Message}");
-                        }
-                    }
+                    await SetNextStepTimeAsync(progress, 3);
+                    await Pause(2000);
+
                     await _botClient.SendTextMessageAsync(progress.UserId, DialogData.BOT_ANSWER_GOODBUY, parseMode: ParseMode.Html);
                     break;
                 case 6:
@@ -495,43 +516,21 @@ namespace WORLDGAMEDEVELOPMENT
                     await _botClient.SendTextMessageAsync(progress.UserId, DialogData.VPO_PROGRAM_ZOOM, parseMode: ParseMode.Html);
                     await Pause(700, 2000);
                     await _botClient.SendTextMessageAsync(progress.UserId, DialogData.BOT_ANSWER_GOODBUY, parseMode: ParseMode.Html);
+                   
+                    await SetNextStepTimeAsync(progress, 3);
 
-                    if (progress.IsTheNextStepSheduledInTime)
+                    if (_progressUsersList.TryGetValue(progress.UserId, out var userProgres))
                     {
-                        try
-                        {
-                            if (_progressUsersList.TryGetValue(progress.UserId, out var userProgres))
-                            {
-                                SetNextTimeStepAddMinutes(userProgres, 3);
-                                await Pause(1000, 2000);
-                                await SetNextDayDefaultOrUserSettings(progress.UserId, userProgres);
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            await Console.Out.WriteLineAsync($"Произошла ошибка изменения времени следующего шага и дня.\nПодробнее - {ex.Message}");
-                        }
+                        await SetNextDayDefaultOrUserSettings(progress.UserId, userProgres);
                     }
-
 
                     break;
                 default:
                     await _botClient.SendTextMessageAsync(progress.UserId, DialogData.REMINDER_OF_DAY_1, parseMode: ParseMode.Html);
+                    await Pause(1000, 2000);
 
-                    if (progress.IsTheNextDaysUpdateIsCompleted)
-                    {
-                        try
-                        {
-                            if (_progressUsersList.TryGetValue(progress.UserId, out var userProgres))
-                            {
-                                SetNextDayHourInProgress(userProgres, 9);
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            await Console.Out.WriteLineAsync($"Произошла ошибка изменения времени следующего шага и дня.\nПодробнее - {ex.Message}");
-                        }
-                    }
+                    await SetNextDayDefaultOrUserSettings(progress.UserId, progress);
+                   
                     break;
             }
         }
@@ -670,12 +669,13 @@ namespace WORLDGAMEDEVELOPMENT
 
                         if (!_userList.Keys.Contains(userBotSettings!.UserId))
                         {
-                            await _botClient.SendTextMessageAsync(message.From.Id, $"Данная функция доступна, только авторизованным пользователям.\n\n");
+                            await _botClient.SendTextMessageAsync(message.From.Id, DialogData.AVAILABLE_ONLY_TO_AUTHORIZED_USERS);
                             await Pause(1000, 2000);
                             await _botClient.SendTextMessageAsync(message.From.Id, $"Вот так могли бы выглядеть Ваши настройки:\n\n");
                             await Pause(1000, 2000);
                             await WriteUserBotSettingsAsync(message, userBotSettings);
-                            await _botClient.SendTextMessageAsync(message.From.Id, $"Предлагаю Вам пройти быструю регистрацию, чтобы пользоваться сервисом в полном объеме.\n");
+                            await _botClient.SendTextMessageAsync(message.From.Id, DialogData.SUGGEST_QUICK_REGISTRATION);
+                            await Pause(1000, 2000);
                             await CreateMenuKeyboardAuthUser(message.From.Id, cancellationToken);
                         }
                         else
@@ -702,13 +702,13 @@ namespace WORLDGAMEDEVELOPMENT
 
                             if (!_userList.Keys.Contains(foodDiary.UserId))
                             {
-                                await _botClient.SendTextMessageAsync(message.From.Id, $"Данная функция доступна, только авторизованным пользователям.\n\n");
+                                await _botClient.SendTextMessageAsync(message.From.Id, DialogData.AVAILABLE_ONLY_TO_AUTHORIZED_USERS);
                                 await Pause(1000, 2000);
                                 await _botClient.SendTextMessageAsync(message.From.Id, $"Вот так могла бы выглядеть Ваша запись:\n\n");
                                 await Pause(1000, 2000);
                                 await _botClient.SendTextMessageAsync(message.From.Id, foodDiary.ToString());
                                 await Pause(4000, 6000);
-                                await _botClient.SendTextMessageAsync(message.From.Id, $"Предлагаю Вам пройти быструю регистрацию, чтобы пользоваться сервисом в полном объеме.\n");
+                                await _botClient.SendTextMessageAsync(message.From.Id, DialogData.SUGGEST_QUICK_REGISTRATION);
                                 await CreateMenuKeyboardAuthUser(message.From.Id, cancellationToken);
                             }
                             else
