@@ -31,7 +31,11 @@ namespace WORLDGAMEDEVELOPMENT
         #region Properties
 
         [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long UserId { get; set; }
+
+        [ForeignKey("UserId")]
+        public UserVPO User { get; set; }
 
         public UpdateState UpdateState
         {
@@ -218,6 +222,7 @@ namespace WORLDGAMEDEVELOPMENT
         private void TimerNextStepDispose()
         {
             _timerEvent.Elapsed -= CheckSheduledEvent;
+            _timerEvent.Dispose();
         }
 
         #endregion
@@ -256,6 +261,7 @@ namespace WORLDGAMEDEVELOPMENT
         private void TimerNextDayDispose()
         {
             _timerNextDay.Elapsed -= CheckEventNextDay;
+            _timerEvent.Dispose();
         }
         #endregion
 

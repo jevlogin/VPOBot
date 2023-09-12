@@ -3,7 +3,7 @@
 
 namespace WORLDGAMEDEVELOPMENT
 {
-    internal class UserVPO
+    public class UserVPO
     {
         [Key]
         public long UserId { get; set; }
