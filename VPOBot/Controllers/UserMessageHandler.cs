@@ -1,10 +1,10 @@
 ﻿using Newtonsoft.Json.Linq;
-using System;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
+
 
 namespace WORLDGAMEDEVELOPMENT
 {
@@ -279,10 +279,12 @@ namespace WORLDGAMEDEVELOPMENT
                 return;
             }
 
-            await UpdateProgressUsersLocal(progress);
+            //TODO - зачем обновлять то, что уже есть?
+            //await UpdateProgressUsersLocal(progress);
+
             var updateProgress = await _databaseService.UpdateUserProgressAsync(progress);
 
-            if (updateProgress && progress.UpdateState != UpdateState.UpdateDate)
+            if (updateProgress && progress.UpdateState != UpdateState.UpdateDate)   //1 exc
             {
                 switch (progress.CurrentDay)
                 {
@@ -316,7 +318,7 @@ namespace WORLDGAMEDEVELOPMENT
                 case 2:
                     await _botClient.SendTextMessageAsync(progress.UserId, DialogData.DIALOG_DAY_2_STEP_2, parseMode: ParseMode.Html);
                     await Pause(1500, 2000);
-                    
+
                     await CreateMenuSettingsBotAsync(progress.UserId, CancellationToken.None);
                     await Pause(1500, 2000);
 
@@ -364,7 +366,7 @@ namespace WORLDGAMEDEVELOPMENT
                     await _botClient.SendTextMessageAsync(progress.UserId, DialogData.DIALOG_DAY_2_STEP_8, parseMode: ParseMode.Html);
                     await Pause(2000);
 
-                    await SetNextDayDefaultOrUserSettings(progress.UserId, progress);
+                    await SetNextDayDefaultOrUserSettings(progress);
 
                     break;
                 default:
@@ -378,7 +380,7 @@ namespace WORLDGAMEDEVELOPMENT
                         await _botClient.SendTextMessageAsync(admin, $"Пользователь {_userList[progress.UserId].FirstName}, требует внимания и живого общения.");
                     }
 
-                    await SetNextDayDefaultOrUserSettings(progress.UserId, progress);
+                    await SetNextDayDefaultOrUserSettings(progress);
 
                     break;
             }
@@ -386,12 +388,9 @@ namespace WORLDGAMEDEVELOPMENT
 
         private async Task SetNextStepTimeAddHoursAsync(ProgressUsers progress, int hour)
         {
-            if (_progressUsersList[progress.UserId].IsTheNextStepSheduledInTime)
+            if (progress.IsTheNextStepSheduledInTime)
             {
-                if (_progressUsersList.ContainsKey(progress.UserId))
-                {
-                    SetNextTimeStepAddHours(_progressUsersList[progress.UserId], hour);
-                }
+                SetNextTimeStepAddHours(progress, hour);
             }
             else
             {
@@ -401,12 +400,9 @@ namespace WORLDGAMEDEVELOPMENT
 
         private async Task SetNextStepTimeAddMinuteAsync(ProgressUsers progress, int time)
         {
-            if (_progressUsersList[progress.UserId].IsTheNextStepSheduledInTime)
+            if (progress.IsTheNextStepSheduledInTime)
             {
-                if (_progressUsersList.ContainsKey(progress.UserId))
-                {
-                    SetNextTimeStepAddMinutes(_progressUsersList[progress.UserId], time);
-                }
+                SetNextTimeStepAddMinutes(progress, time);
             }
             else
             {
@@ -414,21 +410,25 @@ namespace WORLDGAMEDEVELOPMENT
             }
         }
 
-        private async Task SetNextDayDefaultOrUserSettings(long userId, ProgressUsers userProgres)
+        private async Task SetNextDayDefaultOrUserSettings(ProgressUsers progres)
         {
-            if (userProgres.IsTheNextDaysUpdateIsCompleted)
+            if (progres.IsTheNextDaysUpdateIsCompleted)
             {
-                var userSettings = await _databaseService.ReadUserBotSettings(userId, CancellationToken.None) as UserBotSettings;
+                var userSettings = await _databaseService.ReadUserBotSettings(progres.UserId, CancellationToken.None) as UserBotSettings;
                 if (userSettings is { } settings && settings.MorningTime is { } time && time.Hours is { } hour)
                 {
-                    SetNextDayHourInProgress(userProgres, hour);
+                    SetNextDayHourInProgress(progres, hour);
                     await Pause(1000, 2000);
                 }
                 else
                 {
-                    SetNextDayHourInProgress(userProgres, 9);
+                    SetNextDayHourInProgress(progres, 9);
                     await Pause(1000, 2000);
                 }
+            }
+            else
+            {
+                await Console.Out.WriteLineAsync(DialogData.NOT_CHANGE_NEXT_STEP);
             }
         }
 
@@ -515,28 +515,25 @@ namespace WORLDGAMEDEVELOPMENT
                     break;
                 case 6:
                     await _botClient.SendTextMessageAsync(progress.UserId, DialogData.WHAT_IS_FOODDIARY_3, parseMode: ParseMode.Html);
-                    await Pause(700, 2000);
+                    await Pause(1000, 2000);
                     await _botClient.SendTextMessageAsync(progress.UserId, DialogData.SECRET_PASHAL_1, parseMode: ParseMode.Html);
-                    await Pause(700, 2000);
+                    await Pause(1000, 2000);
                     await _botClient.SendTextMessageAsync(progress.UserId, DialogData.INTRODUCTORY_INFORMATION_ABOUT_THE_TRIP_2, parseMode: ParseMode.Html);
-                    await Pause(700, 2000);
+                    await Pause(1000, 2000);
                     await _botClient.SendTextMessageAsync(progress.UserId, DialogData.VPO_PROGRAM_ZOOM, parseMode: ParseMode.Html);
-                    await Pause(700, 2000);
+                    await Pause(1000, 2000);
                     await _botClient.SendTextMessageAsync(progress.UserId, DialogData.BOT_ANSWER_GOODBUY, parseMode: ParseMode.Html);
+                    await Pause(1000, 2000);
 
                     await SetNextStepTimeAddMinuteAsync(progress, 3);
-
-                    if (_progressUsersList.TryGetValue(progress.UserId, out var userProgres))
-                    {
-                        await SetNextDayDefaultOrUserSettings(progress.UserId, userProgres);
-                    }
+                    await Pause(1000, 2000);
 
                     break;
                 default:
                     await _botClient.SendTextMessageAsync(progress.UserId, DialogData.REMINDER_OF_DAY_1, parseMode: ParseMode.Html);
                     await Pause(1000, 2000);
 
-                    await SetNextDayDefaultOrUserSettings(progress.UserId, progress);
+                    await SetNextDayDefaultOrUserSettings(progress);
 
                     break;
             }
@@ -625,14 +622,16 @@ namespace WORLDGAMEDEVELOPMENT
 
         private async Task UpdateProgressUsersLocal(ProgressUsers progressCurrent)
         {
-            if (_progressUsersList.TryGetValue(progressCurrent.UserId, out var progress))
+            if (_progressUsersList.ContainsKey(progressCurrent.UserId))
             {
-                progress = progressCurrent;
+                _progressUsersList[progressCurrent.UserId] = progressCurrent;
                 await Console.Out.WriteLineAsync($"Обновление локального прогресса пользователя - {DialogData.SUCCESS}");
             }
             else
             {
-                await Console.Out.WriteLineAsync($"Обновление локального прогресса пользователя - {DialogData.FAILED}");
+                _progressUsersList[progressCurrent.UserId] = progressCurrent;
+                await Console.Out.WriteLineAsync($"Обновление локального прогресса пользователя - {DialogData.FAILED}\n" +
+                    $"Добавлена новая запись");
             }
         }
 
@@ -1213,8 +1212,6 @@ namespace WORLDGAMEDEVELOPMENT
             }
             var chatId = message.Chat.Id;
             var data = callbackQuery.Data;
-
-            await Console.Out.WriteLineAsync($"Обрабатываю данные {data} в чате {chatId}");
 
             switch (data)
             {

@@ -6,6 +6,7 @@
         public const string BOT_KEY_NAME_RELEASE = "BotKeyRelease";
         public const string BOT_KEY_NAME_DEBUG = "BotKeyDebug";
         public const string DEFAULT_CONNECTION = "DefaultConnection";
+        public const string TEST_CONNECTION = "TestConnection";
         public const string CONNECTIONSTRING_NAME = "ConnectionString";
     }
 }

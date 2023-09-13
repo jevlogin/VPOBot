@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
 using System.Timers;
 using Timer = System.Timers.Timer;
@@ -8,7 +7,7 @@ using Timer = System.Timers.Timer;
 
 namespace WORLDGAMEDEVELOPMENT
 {
-    public class ProgressUsers
+    public sealed class ProgressUsers
     {
         #region Fields
 
@@ -149,12 +148,10 @@ namespace WORLDGAMEDEVELOPMENT
             set
             {
                 _currentStep = value;
-                IsTheNextStepSheduledInTime = true;
+                IsTheNextStepSheduledInTime = true;         //2 exc
                 UpdateState = UpdateState.FullUpdate;
             }
         }
-
-        
 
         #endregion
 
@@ -175,7 +172,6 @@ namespace WORLDGAMEDEVELOPMENT
             _updateState = updateState;
         }
 
-
         #endregion
 
 
@@ -189,12 +185,17 @@ namespace WORLDGAMEDEVELOPMENT
                 {
                     _timerEvent = new Timer
                     {
-                        Interval = (DateTimeOfTheNextStep - DateTime.UtcNow.ToLocalTime()).TotalMilliseconds,
+                        Interval = GetIntervalMilliseconds(DateTimeOfTheNextStep),
                         AutoReset = false,
                     };
-                    _timerEvent.Elapsed += CheckSheduledEvent;
-                    _timerEvent.Start();
                 }
+                else if (true)
+                {
+                    TimerNextStepDispose();
+                    _timerEvent.Interval = GetIntervalMilliseconds(DateTimeOfTheNextStep);
+                }
+                _timerEvent.Elapsed += CheckSheduledEvent;
+                _timerEvent.Start();
             }
             else if (!IsTheNextStepSheduledInTime && _timerEvent == null)
             {
@@ -208,10 +209,13 @@ namespace WORLDGAMEDEVELOPMENT
             }
         }
 
+        private double GetIntervalMilliseconds(DateTime dateTimeOfTheNextStep)
+        {
+            return (dateTimeOfTheNextStep - DateTime.UtcNow.ToLocalTime()).TotalMilliseconds;
+        }
+
         private void CheckSheduledEvent(object? sender, ElapsedEventArgs e)
         {
-            IsTheNextStepSheduledInTime = true;
-
             CurrentStep++;
             if (_timerEvent != null)
             {
@@ -222,7 +226,7 @@ namespace WORLDGAMEDEVELOPMENT
         private void TimerNextStepDispose()
         {
             _timerEvent.Elapsed -= CheckSheduledEvent;
-            _timerEvent.Dispose();
+            _timerEvent.Close();
         }
 
         #endregion
@@ -232,7 +236,7 @@ namespace WORLDGAMEDEVELOPMENT
 
         private void StartCheckingDailyProgressUpdates()
         {
-            if (DateTime.UtcNow.ToLocalTime() < DateNextDay)
+            if (DateTime.UtcNow.ToLocalTime() < DateNextDay || !IsTheNextDaysUpdateIsCompleted)
             {
                 if (_timerNextDay != null)
                     _timerNextDay.Close();
@@ -261,7 +265,7 @@ namespace WORLDGAMEDEVELOPMENT
         private void TimerNextDayDispose()
         {
             _timerNextDay.Elapsed -= CheckEventNextDay;
-            _timerEvent.Dispose();
+            _timerEvent.Close();
         }
         #endregion
 

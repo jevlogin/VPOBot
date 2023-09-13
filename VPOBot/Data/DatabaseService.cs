@@ -115,10 +115,11 @@ namespace WORLDGAMEDEVELOPMENT
 
         internal async Task<bool> UpdateUserProgressAsync(ProgressUsers progress)
         {
-            using (var dbContext = new ApplicationDbContext(_optionBuilder.Options, _configuration))
+            using var dbContext = new ApplicationDbContext(_optionBuilder.Options, _configuration);
+
+            try
             {
                 var existProgress = await dbContext.ProgressUsers.FindAsync(progress.UserId);
-
                 if (existProgress == null)
                 {
                     await dbContext.ProgressUsers.AddAsync(progress);
@@ -130,8 +131,13 @@ namespace WORLDGAMEDEVELOPMENT
                 }
 
                 await dbContext.SaveChangesAsync();
+                return true;
             }
-            return true;
+            catch (Exception ex)
+            {
+                await Console.Out.WriteLineAsync($"Обновление прогресса пользователя - {DialogData.FAILED}\n{ex.Message}");
+                return false;
+            }
         }
 
         #endregion
