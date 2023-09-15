@@ -580,16 +580,11 @@ namespace WORLDGAMEDEVELOPMENT
         private async Task CreateMenuInlineKeyboardContinue(long userId)
         {
             var answer = DialogData.USER_CONTINUER_RESPONSE_BUTTON[_random.Next(0, DialogData.USER_CONTINUER_RESPONSE_BUTTON.Length)];
-
             var button = InlineKeyboardButton.WithCallbackData(answer, callbackData: "/user_continue");
             var replyMarkup = new InlineKeyboardMarkup(button);
-
-
-
             var positivePhrase = DialogData.USER_MOTIVATIONAL_PHRASES[_random.Next(0, DialogData.USER_MOTIVATIONAL_PHRASES.Length)];
             await _botClient.SendTextMessageAsync(userId, positivePhrase, parseMode: ParseMode.Html, replyMarkup: replyMarkup);
-
-            _buttonContinueList[userId] = replyMarkup;  //TODO добавили кнопку Продолжить
+            _buttonContinueList[userId] = replyMarkup;
         }
 
         private async Task DialogZeroStepDayOne(long userId)
@@ -948,6 +943,17 @@ namespace WORLDGAMEDEVELOPMENT
                         case "/помощь" or "помощь":
                             await CreateMenuInline(message.Chat.Id, cancellationToken);
                             break;
+                        case "feedback":
+                            if (commands.Length <= 2)
+                            {
+                                await CreateMenuFeedback(message.Chat.Id, cancellationToken);
+                            }
+                            else
+                            {
+                                await SendMessageCommingSoonAsync(message.Chat.Id, cancellationToken);
+                            }
+
+                            break;
                         case "дневник":
                             if (commands[2] is { } foodDiarryCommand)
                             {
@@ -1054,6 +1060,29 @@ namespace WORLDGAMEDEVELOPMENT
             }
         }
 
+        private async Task CreateMenuFeedback(long chatId, CancellationToken cancellationToken)
+        {
+            await _botClient.SendTextMessageAsync(chatId, "Мы активно развиваем этот проект. И нам требуется обратная связь.\nПожалуйста помоги сделать проект ближе к людям! ❤", cancellationToken: cancellationToken);
+
+            var webApp = new WebAppInfo();
+            webApp.Url = @"https://jevlogin.github.io/VPO/Feedback.html";
+            var buttonFeedback = new KeyboardButton("/🛠️ Помочь в развитии проекта");
+            buttonFeedback.WebApp = webApp;
+
+            var buttonFeedbackMyAnswer = new KeyboardButton("/🧑🏻‍💻 Feedback посмотреть мои ответы");
+
+            var replyKeyboard = new ReplyKeyboardMarkup(new[]
+            {
+                new[] { buttonFeedback, buttonFeedbackMyAnswer },
+            })
+            {
+                ResizeKeyboard = true,
+            };
+
+            await _botClient.SendTextMessageAsync(chatId, DialogData.CHOOSE_ONE_OF_THE_OPTIONS, replyMarkup: replyKeyboard);
+
+        }
+
         private async Task CreateMenuSettingsBotAsync(long chatId, CancellationToken cancellationToken)
         {
             var webApp = new WebAppInfo();
@@ -1119,6 +1148,7 @@ namespace WORLDGAMEDEVELOPMENT
 
             var consultationOfflineButton = new KeyboardButton("/🧬 Офлайн консультация");
             var helpButton = new KeyboardButton("/🔍 Помощь");
+            var feedbackButton = new KeyboardButton("/🐾 Feedback");
             var exitButton = new KeyboardButton("/🏠 Выход");
 
             var foodDiarryButton = new KeyboardButton("/📖 Дневник питания");
@@ -1128,7 +1158,7 @@ namespace WORLDGAMEDEVELOPMENT
             {
                 new[] { consultationOnlineButton, consultationOfflineButton  },
                 new[] { foodDiarryButton, settingsButton },
-                new[] { helpButton, exitButton },
+                new[] { helpButton, feedbackButton, exitButton },
             })
             {
                 ResizeKeyboard = true
@@ -1153,7 +1183,6 @@ namespace WORLDGAMEDEVELOPMENT
                 await _botClient.DeleteMessageAsync(chatId, msgInstructionHowto.MessageId);
             }
         }
-
 
         private async Task CreateMenuFoodDiaryAsync(long chatId, CancellationToken cancellationToken)
         {
@@ -1232,6 +1261,8 @@ namespace WORLDGAMEDEVELOPMENT
 
                         _buttonContinueList[chatId] = new InlineKeyboardMarkup(InlineKeyboardButton.WithCallbackData("👌 Спасибо"));
                         await _botClient.EditMessageReplyMarkupAsync(chatId, messageId: callbackQuery.Message.MessageId, replyMarkup: _buttonContinueList[chatId]);
+                        await Pause(1500, 2000);
+                        await _botClient.EditMessageReplyMarkupAsync(chatId, messageId: callbackQuery.Message.MessageId, replyMarkup: null);
 
                         await _botClient.SendTextMessageAsync(chatId, msgAnswerCongrulatory, parseMode: ParseMode.Html);
                         await Pause(1000, 2000);

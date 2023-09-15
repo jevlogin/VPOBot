@@ -1,0 +1,71 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback VPO</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+    <link href="css/styleFeedback.css" rel="stylesheet" />
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+    <div class="container">
+        <input type="hidden" id="callBackMethod" name="callBackMethod" value="Feedback">
+        <h1 class="text-center mt-4 mb-4" id="formType">Помоги сделать проект ближе к людям!</h1>
+
+        <p>Привет Друг! Мы активно развиваем проект. Но нам часто приходится проводить всякие исследования. Чтобы ускорить процесс разработки, ты можешь помочь нам в этом, честно ответив на следующие вопросы:</p>
+
+        <form id="bot-feedback-form">
+            <div class="mb-3">
+                <label for="answer_1" class="form-label">
+                    Как вы оцениваете свое текущее состояние здоровья и образ жизни?
+                    Могли бы вы описать, какие аспекты вашего образа жизни и здоровья вызывают у вас наибольшее беспокойство или радость?
+                </label>
+                <input type="text" class="form-control" id="answer_1" name="answer_1">
+            </div>
+
+            <div class="mb-3">
+                <label for="answer_2" class="form-label">Какие трудности или проблемы, связанные с здоровьем и образом жизни, вы замечаете в себе или в своей семье? Могут ли вы поделиться конкретными ситуациями или примерами?</label>
+                <input type="text" class="form-control" id="answer_2" name="answer_2">
+            </div>
+
+            <div class="mb-3">
+                <label for="answer_3" class="form-label">Какие конкретные произошедшие изменения в вашем образе жизни и/или питании вызывают у вас наибольшие трудности? Что именно делает их трудными для вас?</label>
+                <input type="text" class="form-control" id="answer_3" name="answer_3">
+            </div>
+
+            <div class="mb-3">
+                <label for="answer_4" class="form-label">Какие симптомы или заболевания вы ассоциируете с вашим текущим образом жизни или питанием? Можете ли вы указать на какие-либо конкретные связи между вашими привычками и вашим здоровьем?</label>
+                <input type="text" class="form-control" id="answer_4" name="answer_4">
+            </div>
+
+            <div class="mb-3">
+                <label for="answer_5" class="form-label">Какие мнения и восприятия о здоровье и образе жизни преобладают среди ваших друзей или в вашем сообществе? Существуют ли какие-то стереотипы или убеждения, которые влияют на выбор образа жизни?</label>
+                <input type="text" class="form-control" id="answer_5" name="answer_5">
+            </div>
+
+            <div class="mb-3">
+                <label for="answer_6" class="form-label">Какие конкретные улучшения или шаги вы уже предприняли для улучшения своего здоровья или образа жизни? Могли бы вы поделиться своим опытом в этом отношении?</label>
+                <input type="text" class="form-control" id="answer_6" name="answer_6">
+            </div>
+
+            <div class="mb-3">
+                <label for="answer_7" class="form-label">Какие организации, ресурсы или специалисты вы используете для поддержки своего здоровья и образа жизни? Можете ли вы рассказать о конкретных мероприятиях или программных инициативах, которые вы посещали или используете?</label>
+                <input type="text" class="form-control" id="answer_7" name="answer_7">
+            </div>
+
+            <div class="mb-3">
+                <label for="answer_8" class="form-label">Знаете ли вы о каких-либо других организациях, программах или инициативах в Москве, которые занимаются подобными вопросами? Могли бы вы упомянуть о них и о том, как они могут быть полезны для людей, сталкивающихся с подобными проблемами?</label>
+                <input type="text" class="form-control" id="answer_8" name="answer_8">
+            </div>
+
+            <div class="mb-3 text-center">
+                <button type="submit" class="btn btn-primary">Я честно ответил на все вопросы ❤</button>
+            </div>
+        </form>
+    </div>
+    <script src="js/botFeedback.js"></script>
+</body>
+</html>
+
+
