@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
+using Telegram.Bot.Requests;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
@@ -17,6 +18,7 @@ namespace WORLDGAMEDEVELOPMENT
         private readonly Dictionary<long, string> _adminList;
         private readonly Dictionary<long, UserVPO> _userList;
         private Dictionary<long, ProgressUsers> _progressUsersList = new Dictionary<long, ProgressUsers>();
+        private readonly Dictionary<long, InlineKeyboardMarkup> _buttonContinueList = new Dictionary<long, InlineKeyboardMarkup>();
 
         #endregion
 
@@ -278,9 +280,6 @@ namespace WORLDGAMEDEVELOPMENT
                 await Console.Out.WriteLineAsync($"Ошибка синхронизации пользователей.");
                 return;
             }
-
-            //TODO - зачем обновлять то, что уже есть?
-            //await UpdateProgressUsersLocal(progress);
 
             var updateProgress = await _databaseService.UpdateUserProgressAsync(progress);
 
@@ -581,10 +580,16 @@ namespace WORLDGAMEDEVELOPMENT
         private async Task CreateMenuInlineKeyboardContinue(long userId)
         {
             var answer = DialogData.USER_CONTINUER_RESPONSE_BUTTON[_random.Next(0, DialogData.USER_CONTINUER_RESPONSE_BUTTON.Length)];
+
             var button = InlineKeyboardButton.WithCallbackData(answer, callbackData: "/user_continue");
             var replyMarkup = new InlineKeyboardMarkup(button);
+
+
+
             var positivePhrase = DialogData.USER_MOTIVATIONAL_PHRASES[_random.Next(0, DialogData.USER_MOTIVATIONAL_PHRASES.Length)];
             await _botClient.SendTextMessageAsync(userId, positivePhrase, parseMode: ParseMode.Html, replyMarkup: replyMarkup);
+
+            _buttonContinueList[userId] = replyMarkup;  //TODO добавили кнопку Продолжить
         }
 
         private async Task DialogZeroStepDayOne(long userId)
@@ -618,21 +623,6 @@ namespace WORLDGAMEDEVELOPMENT
             }
 
             await Task.Delay(result);
-        }
-
-        private async Task UpdateProgressUsersLocal(ProgressUsers progressCurrent)
-        {
-            if (_progressUsersList.ContainsKey(progressCurrent.UserId))
-            {
-                _progressUsersList[progressCurrent.UserId] = progressCurrent;
-                await Console.Out.WriteLineAsync($"Обновление локального прогресса пользователя - {DialogData.SUCCESS}");
-            }
-            else
-            {
-                _progressUsersList[progressCurrent.UserId] = progressCurrent;
-                await Console.Out.WriteLineAsync($"Обновление локального прогресса пользователя - {DialogData.FAILED}\n" +
-                    $"Добавлена новая запись");
-            }
         }
 
         private async Task ConnectedToDatabaseAndSynchronizeProgress()
@@ -1239,8 +1229,13 @@ namespace WORLDGAMEDEVELOPMENT
                     if (_progressUsersList.Count > 0)
                     {
                         var msgAnswerCongrulatory = DialogData.USER_CONGRATILATORY_RESPONSES_ANSWER[_random.Next(0, DialogData.USER_CONGRATILATORY_RESPONSES_ANSWER.Length)];
-                        await _botClient.SendTextMessageAsync(chatId, msgAnswerCongrulatory, parseMode: ParseMode.Html, replyMarkup: new ReplyKeyboardRemove());
+
+                        _buttonContinueList[chatId] = new InlineKeyboardMarkup(InlineKeyboardButton.WithCallbackData("👌 Спасибо"));
+                        await _botClient.EditMessageReplyMarkupAsync(chatId, messageId: callbackQuery.Message.MessageId, replyMarkup: _buttonContinueList[chatId]);
+
+                        await _botClient.SendTextMessageAsync(chatId, msgAnswerCongrulatory, parseMode: ParseMode.Html);
                         await Pause(1000, 2000);
+
                         _progressUsersList[chatId].CurrentStep++;
                     }
                     else
