@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Requests;
@@ -648,6 +650,37 @@ namespace WORLDGAMEDEVELOPMENT
             {
                 switch (callBackType)
                 {
+                    case CallBackMethod.Feedback:
+                        await _botClient.SendTextMessageAsync(message.From.Id, "Мы получили ваши данные. Обрабатываем");
+                        await Console.Out.WriteLineAsync($"Мы получили обратнуюсвязь от пользователя.");
+
+                        JObject feedbackResponseObject = (JObject)parseArray[1];
+
+                        FeedbackResponse feedbackResponse;
+                        try
+                        {
+                            feedbackResponse = feedbackResponseObject.ToObject<FeedbackResponse>();
+                        }
+                        catch (Exception ex)
+                        {
+                            await Console.Out.WriteLineAsync($"Возникло исключение:\n\n{ex}");
+                            return;
+                        }
+
+                        feedbackResponse.UserId = message.From.Id;
+                        var userExist = await _databaseService.LoadUserAnyAsync(message.From.Id);
+
+                        if (!userExist)
+                        {
+                            // Создать пользователя или предпринять другие действия по логике вашего приложения
+                            // ...
+                            var tempUser = new UserVPO { UserId = message.From.Id };
+                            await AddedNewUserToLocalUserList(tempUser);
+                            await _databaseService.AddUserAsync(tempUser);
+                        }
+                        await _databaseService.AddOrUpdateFeedbackResponseAsync(feedbackResponse);
+
+                        break;
                     case CallBackMethod.BotConfig:
                         await Console.Out.WriteLineAsync($"Мы получили настройки пользователя.");
                         JObject botSettingsObject = (JObject)parseArray[1];
@@ -947,6 +980,15 @@ namespace WORLDGAMEDEVELOPMENT
                             if (commands.Length <= 2)
                             {
                                 await CreateMenuFeedback(message.Chat.Id, cancellationToken);
+                            }
+                            else if (commands[2] is { } feedbackHelp)
+                            {
+                                switch (feedbackHelp)
+                                {
+                                    case "посмотреть":
+                                        await _botClient.SendTextMessageAsync(message.Chat.Id, "Скоро Вы сможете посмотреть свои ответы");
+                                        break;
+                                }
                             }
                             else
                             {

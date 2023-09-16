@@ -199,7 +199,7 @@ namespace WORLDGAMEDEVELOPMENT
             if (existingSettings == null)
             {
                 await _dbContext.UserBotSettings.AddAsync(userBotSettings);
-                await Console.Out.WriteLineAsync($"Была добавлена новая запис в дневник питания, в базу данных");
+                await Console.Out.WriteLineAsync($"Была добавлена новая запись в дневник питания, в базу данных");
             }
             else
             {
@@ -218,6 +218,35 @@ namespace WORLDGAMEDEVELOPMENT
             }
             return userBotSettings;
         }
+
         #endregion
+
+
+        internal async Task AddOrUpdateFeedbackResponseAsync(FeedbackResponse feedbackResponse)
+        {
+            var existingFeedback = await _dbContext.FeedbackResponses.SingleOrDefaultAsync(feedback => feedback.ResponseId == feedbackResponse.ResponseId);
+            try
+            {
+                if (existingFeedback == null)
+                {
+                    await _dbContext.FeedbackResponses.AddAsync(feedbackResponse);
+                    await Console.Out.WriteLineAsync($"Была добавлена новая запись ответов обратной связи, в базу данных");
+                }
+                else
+                {
+                    _dbContext.Entry(existingFeedback).CurrentValues.SetValues(feedbackResponse);
+                }
+                await _dbContext.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                await Console.Out.WriteLineAsync($"Не получилось добавить запись\n{ex.Message}");
+            }
+        }
+
+        internal async Task<bool> LoadUserAnyAsync(long userId)
+        {
+            return await _dbContext.Users.AnyAsync(u => u.UserId == userId);
+        }
     }
 }

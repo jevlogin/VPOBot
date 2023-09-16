@@ -7,5 +7,6 @@
         UserRequestForConsultation  = 2,
         FoodDiaryFilling            = 3,
         BotConfig                   = 4,
+        Feedback                    = 5,
     }
 }

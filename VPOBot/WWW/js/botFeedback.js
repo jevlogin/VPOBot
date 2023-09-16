@@ -1,51 +1,65 @@
-﻿let tg = window.Telegram?.WebApp;
+﻿document.addEventListener("DOMContentLoaded", function () {
+    let tg = window.Telegram?.WebApp;
 
-if (tg) {
-    tg.expand();
+    if (tg) {
+        tg.expand();
 
-    let form = document.getElementById("bot-feedback-form");
+        let form = document.getElementById("bot-feedback-form");
 
-    form.addEventListener("submit", (event) => {
-        event.preventDefault();
+        form.addEventListener("submit", (event) => {
+            event.preventDefault();
 
-        // Создаем объект для ответов
-        let answers = {};
+            let responses = [];
 
-        // Заполняем объект ответами из полей формы
-        for (let i = 1; i <= 20; i++) {
-            let answer = document.getElementById(`answer_${i}`).value;
-
-            if (answer) {
-                // Если поле существует, значит, вопрос есть, и мы записываем в него вопрос
-                answers[`answer${i}`] = answer;
-
-            } else {
-                // Если поле не существует, значит, вопросов больше нет, и мы завершаем цикл
-
-                break;
+            let questions = document.querySelectorAll(".form-label");
+            for (let i = 0; i < questions.length; i++) {
+                let questionText = questions[i].textContent.trim();
+                let answerInput = document.getElementById(`answer_${i + 1}`);
+                if (answerInput) {
+                    let answer = answerInput.value;
+                    if (answer) {
+                        responses.push({
+                            question: questionText,
+                            answer: answer
+                        });
+                    }
+                }
             }
-        }
 
+            let responseData = {
+                ResponseDataId: 0,
+                Responses: responses,
+                ResponseId: 0,
+                FeedbackResponse: null,
+            }
 
-        let formType = document.getElementById("formType").innerText;
-        let callBackMethod = document.getElementById("callBackMethod").value;
+            let formType = document.getElementById("formType").innerText;
+            let callBackMethod = document.getElementById("callBackMethod").value;
 
-        let messageDataInfoType = {
-            formType: formType,
-            callBackMethod: callBackMethod,
-        }
+            let messageDataInfoType = {
+                formType: formType,
+                callBackMethod: callBackMethod,
+            }
 
-        let formData = {
-            answers: answers
-        };
+            let currentDate = new Date();
+            let currentDateTimeString = currentDate.toISOString();
 
-        let jsonArray = [messageDataInfoType, formData];
-        let jsonString = JSON.stringify(jsonArray);
+            let formData = {
+                ResponseId: 0,
+                ResponseDateTime: currentDateTimeString,
+                UserId: 0,
+                ResponseData: responseData,
+                User: null,
+            };
 
-        tg.sendData(jsonString);
+            let jsonArray = [messageDataInfoType, formData];
+            let jsonString = JSON.stringify(jsonArray);
 
-        form.reset();
+            tg.sendData(jsonString);
 
-        tg.close();
-    });
-}
+            form.reset();
+
+            tg.close();
+        });
+    }
+});

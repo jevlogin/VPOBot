@@ -21,6 +21,9 @@ namespace WORLDGAMEDEVELOPMENT
         public DbSet<ProgressUsers> ProgressUsers { get; set; }
         public DbSet<FoodDiaryEntry> FoodDiary { get; set; }
         public DbSet<UserBotSettings> UserBotSettings { get; set; }
+        public DbSet<FeedbackResponse> FeedbackResponses { get; set; }
+        public DbSet<ResponseData> ResponseDatas { get; set; }
+        public DbSet<QuestionAnswerPair> QuestionAnswerPairs { get; set; }
 
         #endregion
 
@@ -45,46 +48,7 @@ namespace WORLDGAMEDEVELOPMENT
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<UserAdmin>(ConfigureAdmin);
-            modelBuilder.Entity<ProgressUsers>(ConfigureProgress);
-            modelBuilder.Entity<UserVPO>(ConfigureUsers);
-            modelBuilder.Entity<FoodDiaryEntry>(ConfigureFoodDiary);
-            modelBuilder.Entity<UserBotSettings>(ConfigureUserBotSettings);
-        }
-
-        #endregion
-
-
-        #region Methods
-
-        private void ConfigureUserBotSettings(EntityTypeBuilder<UserBotSettings> entity)
-        {
-            entity.ToTable(nameof(UserBotSettings));
-            entity.HasKey(fd => fd.UserId);
-        }
-
-        private void ConfigureFoodDiary(EntityTypeBuilder<FoodDiaryEntry> entity)
-        {
-            entity.ToTable(nameof(FoodDiaryEntry));
-            entity.HasKey(fd => fd.Id);
-        }
-
-        private void ConfigureAdmin(EntityTypeBuilder<UserAdmin> entity)
-        {
-            entity.ToTable(nameof(UserAdmin));
-            entity.HasKey(u => u.UserId);
-        }
-
-        private void ConfigureUsers(EntityTypeBuilder<UserVPO> entity)
-        {
-            entity.ToTable(nameof(UserVPO));
-            entity.HasKey(u => u.UserId);
-        }
-
-        private void ConfigureProgress(EntityTypeBuilder<ProgressUsers> entity)
-        {
-            entity.ToTable(nameof(ProgressUsers));
-            entity.HasKey(u => u.UserId);
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
         }
 
         #endregion
