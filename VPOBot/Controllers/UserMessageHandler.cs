@@ -343,15 +343,13 @@ namespace WORLDGAMEDEVELOPMENT
                 case 5:
                     await _botClient.SendTextMessageAsync(progress.UserId, DialogData.DIALOG_DAY_2_STEP_5, parseMode: ParseMode.Html);
                     await Pause(2000, 3000);
-
                     await CreateMenuInlineKeyboardContinue(progress.UserId);
 
                     break;
                 case 6:
                     await _botClient.SendTextMessageAsync(progress.UserId, DialogData.DIALOG_DAY_2_STEP_6);
-                    //await SetNextStepTimeAddHoursAsync(progress, 3);
-                    await SetNextStepTimeAddMinuteAsync(progress, 1);
-
+                    await SetNextStepTimeAddHoursAsync(progress, 10);
+                    
                     break;
                 case 7:
                     await _botClient.SendTextMessageAsync(progress.UserId, DialogData.DIALOG_DAY_2_STEP_7_1, parseMode: ParseMode.Html);
@@ -360,7 +358,7 @@ namespace WORLDGAMEDEVELOPMENT
                     await _botClient.SendTextMessageAsync(progress.UserId, DialogData.DIALOG_DAY_2_STEP_7_2, parseMode: ParseMode.Html);
                     await Pause(1000, 2000);
 
-                    await SetNextStepTimeAddMinuteAsync(progress, 1);
+                    await SetNextStepTimeAddMinuteAsync(progress, 2);
 
                     break;
                 case 8:
