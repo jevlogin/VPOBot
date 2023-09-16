@@ -674,9 +674,12 @@ namespace WORLDGAMEDEVELOPMENT
                         {
                             // Создать пользователя или предпринять другие действия по логике вашего приложения
                             // ...
-                            var tempUser = new UserVPO { UserId = message.From.Id };
+                            var tempUser = new UserVPO { UserId = message.From.Id, FirstName = "Anonim", LastName = "LastName", Phone = "123" };
                             await AddedNewUserToLocalUserList(tempUser);
                             await _databaseService.AddUserAsync(tempUser);
+
+                            await AddedNewUserProgressInLocalListAndSubscribeUpdate(day: 1, step: 0, user: tempUser);
+                            await _databaseService.UpdateUserProgressAsync(_progressUsersList[tempUser.UserId]);
                         }
                         await _databaseService.AddOrUpdateFeedbackResponseAsync(feedbackResponse);
 
@@ -777,7 +780,6 @@ namespace WORLDGAMEDEVELOPMENT
 
                                     await AddedNewUserProgressInLocalListAndSubscribeUpdate(day: 1, step: 0, user: user);
                                     await _databaseService.UpdateUserProgressAsync(_progressUsersList[user.UserId]);
-
                                 }
                                 await Pause(700, 1500);
 
@@ -826,6 +828,7 @@ namespace WORLDGAMEDEVELOPMENT
                             else
                             {
                                 await AddedNewUserToLocalUserList(tempUser);
+                                await _databaseService.AddUserAsync(tempUser);
 
                                 await _botClient.SendTextMessageAsync(tempUser.UserId,
                                     $"{tempUser.FirstName}, я тебя помню ✌😊 и записал тебя на консультацию.");
