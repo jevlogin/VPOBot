@@ -349,7 +349,7 @@ namespace WORLDGAMEDEVELOPMENT
                 case 6:
                     await _botClient.SendTextMessageAsync(progress.UserId, DialogData.DIALOG_DAY_2_STEP_6);
                     await SetNextStepTimeAddHoursAsync(progress, 10);
-                    
+
                     break;
                 case 7:
                     await _botClient.SendTextMessageAsync(progress.UserId, DialogData.DIALOG_DAY_2_STEP_7_1, parseMode: ParseMode.Html);
@@ -712,6 +712,12 @@ namespace WORLDGAMEDEVELOPMENT
                         {
                             await _databaseService.AddOrUpdateBotSettingsAsync(userBotSettings);
                             await Pause(1000, 2000);
+                            //TODO - изменить настройки пользователя..
+                            if (userBotSettings.MorningTime is { } time)
+                            {
+                                _progressUsersList[message.From.Id].DateNextDay.ChangeDate(time);
+                            }
+
                             await _botClient.SendTextMessageAsync(message.From.Id, $"Вот Ваша запись:\n\n");
                             await Pause(1000, 2000);
                             await WriteUserBotSettingsAsync(message, userBotSettings);

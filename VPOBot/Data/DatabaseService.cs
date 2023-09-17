@@ -161,6 +161,11 @@ namespace WORLDGAMEDEVELOPMENT
             await _dbContext.SaveChangesAsync();
         }
 
+        internal async Task<bool> LoadUserAnyAsync(long userId)
+        {
+            return await _dbContext.Users.AnyAsync(u => u.UserId == userId);
+        }
+
         #endregion
 
 
@@ -222,6 +227,8 @@ namespace WORLDGAMEDEVELOPMENT
         #endregion
 
 
+        #region AddOrUpdateFeedbackResponseAsync
+     
         internal async Task AddOrUpdateFeedbackResponseAsync(FeedbackResponse feedbackResponse)
         {
             var existingFeedback = await _dbContext.FeedbackResponses.SingleOrDefaultAsync(feedback => feedback.ResponseId == feedbackResponse.ResponseId);
@@ -242,11 +249,8 @@ namespace WORLDGAMEDEVELOPMENT
             {
                 await Console.Out.WriteLineAsync($"Не получилось добавить запись\n{ex.Message}");
             }
-        }
+        } 
 
-        internal async Task<bool> LoadUserAnyAsync(long userId)
-        {
-            return await _dbContext.Users.AnyAsync(u => u.UserId == userId);
-        }
+        #endregion
     }
 }
